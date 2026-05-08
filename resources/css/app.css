@@ -254,32 +254,36 @@ textarea {
   }
 
   .navbar-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: 0;
-    display: none;
+    position: fixed;
+    top: 0;
+    left: -280px; /* Menu lateral fechado */
+    width: 280px;
+    height: 100vh;
+    background: #000;
     flex-direction: column;
     gap: 0;
-    background: #000;
-    padding: 12px 0;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    z-index: 100;
+    padding: 80px 0 20px; /* Espaço para o logo */
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
   }
 
   .navbar-menu.open {
-    display: flex;
+    left: 0; /* Menu lateral aberto */
   }
 
   .navbar-menu a,
   .navbar-mobile-user,
   .navbar-mobile-form {
-    padding: 12px 18px;
+    padding: 16px 24px;
+    color: white;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
 
   .navbar-menu a {
     display: block;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 16px;
   }
 
   .navbar-menu a:last-child {
@@ -304,6 +308,35 @@ textarea {
 
   .navbar-burger {
     display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+  }
+
+  .navbar-burger span {
+    width: 100%;
+    height: 2px;
+    background: white;
+    transition: all 0.3s;
+    transform-origin: center;
+  }
+
+  .navbar-burger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .navbar-burger.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .navbar-burger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
   }
 
   .navbar-mobile-user {
@@ -322,7 +355,22 @@ textarea {
     text-align: center;
     margin-top: 8px;
   }
-}
+
+  /* Overlay para fechar o menu */
+  .navbar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  .navbar-overlay.open {
+    display: block;
+  }
 
 /* PAGE WRAPPER */
 .page-wrapper {
@@ -525,9 +573,8 @@ textarea {
     padding: 24px 16px;
   }
 
-  .login-left,
-  .login-right {
-    padding: 24px;
+  .login-left {
+    display: none; /* Remove o lado esquerdo com logo no mobile */
   }
 
   .login-right {
@@ -1188,6 +1235,33 @@ textarea::placeholder {
 @media (max-width: 680px) {
   .location-card {
     grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .home-grid {
+    gap: 16px;
+  }
+
+  .home-card {
+    padding: 24px 20px;
+  }
+
+  .home-card.wide {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wide-card-content {
+    width: 100%;
+  }
+
+  .map-preview {
+    min-height: 150px;
   }
 }
 
@@ -2030,4 +2104,5 @@ textarea::placeholder {
   .section-title {
     text-align: left;
   }
+}
 }

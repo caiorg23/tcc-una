@@ -46,13 +46,31 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const navbarToggle = document.getElementById('navbarToggle');
   const navbarMenu = document.getElementById('navbarMenu');
+  const navbarOverlay = document.getElementById('navbarOverlay');
   if (navbarToggle && navbarMenu) {
     navbarToggle.addEventListener('click', () => {
       navbarMenu.classList.toggle('open');
+      navbarToggle.classList.toggle('open');
+      if (navbarOverlay) {
+        navbarOverlay.classList.toggle('open');
+      }
     });
     navbarMenu.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => navbarMenu.classList.remove('open'));
+      link.addEventListener('click', () => {
+        navbarMenu.classList.remove('open');
+        navbarToggle.classList.remove('open');
+        if (navbarOverlay) {
+          navbarOverlay.classList.remove('open');
+        }
+      });
     });
+    if (navbarOverlay) {
+      navbarOverlay.addEventListener('click', () => {
+        navbarMenu.classList.remove('open');
+        navbarToggle.classList.remove('open');
+        navbarOverlay.classList.remove('open');
+      });
+    }
   }
 
   const profileToggle = document.getElementById('profileToggle');

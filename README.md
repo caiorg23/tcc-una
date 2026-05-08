@@ -55,6 +55,19 @@ Thank you for considering contributing to the Laravel framework! The contributio
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
+## Deployment on Railway
+
+If you deploy this app on Railway with a MySQL plugin, configure the environment variables like this:
+
+- `APP_ENV=production`
+- `APP_DEBUG=false`
+- `APP_URL=https://<your-railway-url>`
+- `APP_KEY=<generated-key>`
+- `DATABASE_URL=mysql://root:<password>@mysql.railway.internal:3306/railway`
+- `DB_CONNECTION=mysql`
+
+Do not set `APP_URL` to the database URL. `APP_URL` must be the website URL, while `DATABASE_URL` is the connection string for the database.
+
 ## Security Vulnerabilities
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.

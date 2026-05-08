@@ -32,6 +32,10 @@ RUN mkdir -p storage/logs \
     && chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
+# Instalar entrypoint e permitir execução
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Configurar Apache para servir Laravel do diretório public
 RUN echo '<VirtualHost *:80>\n\
     ServerName localhost\n\
@@ -45,11 +49,8 @@ RUN echo '<VirtualHost *:80>\n\
 # Gerar APP_KEY se não existir
 RUN php artisan key:generate --force || true
 
-# Executar migrations
-RUN php artisan migrate --force || true
-
 # Expor porta 80
 EXPOSE 80
 
-# Iniciar Apache
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

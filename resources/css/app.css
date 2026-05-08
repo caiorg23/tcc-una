@@ -30,7 +30,8 @@ body {
 }
 
 img {
-  max-width: 150%;
+  max-width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -511,6 +512,13 @@ textarea {
 }
 
 @media (max-width: 768px) {
+  .login-page {
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
+    padding: 40px 0 60px;
+  }
+
   .login-container {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -520,6 +528,10 @@ textarea {
   .login-left,
   .login-right {
     padding: 24px;
+  }
+
+  .login-right {
+    justify-content: center;
   }
 
   .login-logo {
@@ -532,6 +544,10 @@ textarea {
 
   .login-left h1 {
     font-size: 30px;
+  }
+
+  .navbar-logo-img {
+    height: 56px;
   }
 }
 
@@ -1927,13 +1943,91 @@ textarea::placeholder {
     flex-direction: column;
   }
 
+  .landing-buttons button {
+    width: 100%;
+  }
+
   .home-card.wide {
     grid-column: span 1;
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .modal {
-    max-width: calc(100% - 40px);
+  .page-wrapper {
+    padding-top: 90px;
+  }
+
+  .page-content {
+    padding: 16px;
+  }
+
+  .login-page {
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
+    padding-bottom: 60px;
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+
+  .date-grid {
+    grid-template-columns: repeat(7, minmax(90px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .time-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .confirm-line {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .appointment-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .appointment-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .profile-dropdown {
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    width: calc(100% - 20px);
+  }
+
+  .chat-widget {
+    bottom: 90px;
+    right: 12px;
+  }
+
+  .chat-panel {
+    right: 12px;
+    width: calc(100vw - 24px);
+    max-width: 100%;
+    bottom: 90px;
+  }
+
+  .navbar-menu a {
+    padding: 14px 18px;
+  }
+
+  .section-title {
+    text-align: left;
   }
 }

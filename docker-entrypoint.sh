@@ -2,8 +2,8 @@
 
 echo "Iniciando entrypoint do Laravel..."
 
-# Se variáveis de banco estão configuradas, aguarda conexão e executa migrations
-if [ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
+# Se variáveis de banco estão configuradas (DATABASE_URL ou DB_HOST), aguarda conexão e executa migrations
+if [ -n "$DATABASE_URL" ] || ([ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]); then
   echo "Variáveis de banco configuradas. Aguardando conexão..."
 
   retries=0
@@ -11,7 +11,7 @@ if [ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
   
   # Aguarda o banco ficar disponível
   while [ "$retries" -lt "$max_retries" ]; do
-    if php artisan tinker --no-interaction <<< "exit;" >/dev/null 2>&1; then
+    if php artisan migrate:status --no-interaction >/dev/null 2>&1; then
       echo "Banco disponível!"
       break
     fi

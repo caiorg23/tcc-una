@@ -26,6 +26,9 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Copiar arquivos do projeto
 COPY . .
 
+# Copiar .env.example para .env se não existir
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
 # Instalar dependências do Composer
 RUN composer install --no-dev --optimize-autoloader
 

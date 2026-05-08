@@ -25,8 +25,12 @@ COPY . .
 # Instalar dependências do Composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Configurar permissões
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+# Preparar diretórios de cache e logs e garantir permissão de escrita
+RUN mkdir -p storage/logs \
+    && touch storage/logs/laravel.log \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
 # Configurar Apache para servir Laravel do diretório public
 RUN echo '<VirtualHost *:80>\n\

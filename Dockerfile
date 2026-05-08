@@ -7,11 +7,12 @@ RUN a2enmod rewrite
 RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
+    libpq-dev \
     zip \
     unzip \
     git \
     curl \
-    && docker-php-ext-install pdo pdo_mysql mbstring xml
+    && docker-php-ext-install pdo pdo_pgsql mbstring xml
 
 # Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

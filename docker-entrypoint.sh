@@ -33,6 +33,8 @@ if [ -n "$DATABASE_URL" ] || ([ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n
     echo "Migrations executadas com sucesso."
   else
     echo "Aviso: Banco não ficou disponível após aguardar $max_retries tentativas."
+    echo "Tentando executar migrations mesmo assim..."
+    php artisan migrate --force --no-interaction || echo "Migrations falharam, mas continuando..."
   fi
 else
   echo "Variáveis de banco não configuradas. Pulando migrations."

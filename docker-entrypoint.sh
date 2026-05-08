@@ -11,7 +11,14 @@ if [ -n "$DATABASE_URL" ] || ([ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n
   
   # Aguarda o banco ficar disponível
   while [ "$retries" -lt "$max_retries" ]; do
-    if php artisan migrate:status --no-interaction >/dev/null 2>&1; then
+    if php -r "
+      try {
+        \$pdo = new PDO(getenv('DATABASE_URL') ?: 'pgsql:host='.getenv('DB_HOST').';port='.getenv('DB_PORT').';dbname='.getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD'));
+        echo 'connected';
+      } catch (Exception \$e) {
+        exit(1);
+      }
+    " 2>/dev/null | grep -q "connected"; then
       echo "Banco disponível!"
       break
     fi

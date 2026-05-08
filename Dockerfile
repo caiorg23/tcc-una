@@ -19,6 +19,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Definir diretório de trabalho
 WORKDIR /var/www/html
 
+# Copiar entrypoint primeiro
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Copiar arquivos do projeto
 COPY . .
 
@@ -31,10 +35,6 @@ RUN mkdir -p storage/logs \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-
-# Instalar entrypoint e permitir execução
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Configurar Apache para servir Laravel do diretório public
 RUN echo '<VirtualHost *:80>\n\

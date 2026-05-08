@@ -1,21 +1,31 @@
 #!/bin/bash
 set -e
 
+echo "Iniciando entrypoint do Laravel..."
+
 if [ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n "$DB_USERNAME" ]; then
-  echo "Aguardando o banco de dados ficar disponível..."
+  echo "Variáveis de banco configuradas. Aguardando conexão..."
+
   retries=0
   until php artisan migrate:status --no-interaction >/dev/null 2>&1 || [ "$retries" -ge 20 ]; do
     ((retries++))
-    echo "Banco não disponível ainda. Tentando novamente em 3s ($retries/20)..."
+    echo "Banco não disponível. Tentando novamente em 3s ($retries/20)..."
     sleep 3
   done
 
   if [ "$retries" -lt 20 ]; then
-    echo "Executando migrations..."
-    php artisan migrate --force --no-interaction
+    echo "Banco disponível. Executando migrations..."
+    if php artisan migrate --force --no-interaction; then
+      echo "Migrations executadas com sucesso."
+    else
+      echo "Erro ao executar migrations, mas continuando inicialização."
+    fi
   else
-    echo "Banco de dados não ficou disponível após aguardar. Continuando inicialização."
+    echo "Banco não ficou disponível após aguardar. Continuando sem migrations."
   fi
+else
+  echo "Variáveis de banco não configuradas. Pulando migrations."
 fi
 
+echo "Iniciando aplicação..."
 exec "$@"

@@ -152,10 +152,19 @@ class SiteController extends Controller
 
     public function scheduleConfirm(Request $request)
     {
-        $cleanServiceIds = array_values(array_filter((array) $request->input('service_ids', []), fn ($id) => $id !== null && $id !== ''));
-    $request->merge(['service_ids' => $cleanServiceIds]);
+        // Clean and validate service_ids
+        $serviceIds = array_values(array_filter((array) $request->input('service_ids', []), function ($id) {
+            return is_numeric($id) && $id > 0;
+        }));
 
-    $data = $request->validate([
+        // Ensure we have at least one valid service ID
+        if (empty($serviceIds)) {
+            return back()->withErrors(['service_ids' => 'Selecione pelo menos um serviço.'])->withInput();
+        }
+
+        $request->merge(['service_ids' => $serviceIds]);
+
+        $data = $request->validate([
             'service_ids' => 'required|array|min:1',
             'service_ids.*' => 'exists:services,id',
             'date' => 'required|date|after:today|before_or_equal:' . now()->addDays(14)->toDateString(),

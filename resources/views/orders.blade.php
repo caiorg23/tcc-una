@@ -12,37 +12,46 @@
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
         <div class="header-title-block">
           <h2>Meus Pedidos</h2>
-          <p>Veja aqui todos os agendamentos confirmados e cancelados.</p>
+          <p>Veja todos os seus agendamentos e cancele ou edite quando precisar.</p>
         </div>
       </div>
     </div>
 
     <div class="container">
+      @if(session('status'))
+        <div class="alert-box">{{ session('status') }}</div>
+      @endif
+
+      <div class="section-title">Pedidos</div>
+      <p class="confirm-note">Acompanhe os agendamentos já confirmados, os cancelados e os próximos horários.</p>
+
       @if($appointments->isEmpty())
-        <div class="appointment-empty">Nenhum pedido encontrado. Faça um novo agendamento.</div>
+        <div class="appointment-card">
+          <div class="appointment-info">
+            <div class="appointment-title">Nenhum pedido encontrado</div>
+            <div class="appointment-meta">Você ainda não tem agendamentos registrados. Agende agora e volte aqui para acompanhar.</div>
+          </div>
+        </div>
       @else
         <div class="appointment-list">
           @foreach($appointments as $appointment)
-            <div class="appointment-card {{ $appointment->status === 'cancelado' ? 'appointment-canceled' : '' }}">
+            <div class="appointment-card">
               <div class="appointment-info">
-                <div class="appointment-title">{{ $appointment->service->name }}</div>
-                <div class="appointment-meta">{{ date('d/m/Y', strtotime($appointment->date)) }} • {{ $appointment->time }}</div>
-                <div class="appointment-meta">{{ $appointment->location }}</div>
+                <div class="appointment-title">{{ optional($appointment->service)->name ?? 'Serviço indisponível' }}</div>
+                <div class="appointment-meta">
+                  Data: {{ \Illuminate\Support\Carbon::parse($appointment->date)->format('d/m/Y') }}<br>
+                  Horário: {{ $appointment->time }}<br>
+                  Status: <strong>{{ ucfirst($appointment->status) }}</strong>
+                </div>
               </div>
               <div class="appointment-actions">
-                <span class="status-pill status-{{ $appointment->status }}">{{ ucfirst($appointment->status) }}</span>
-
-                @php
-                  $isFuture = strtotime($appointment->date) >= strtotime(now()->toDateString());
-                @endphp
-
-                @if($appointment->status !== 'cancelado' && $isFuture)
-                  <a href="{{ route('schedule.edit', $appointment) }}" class="btn-small">Editar</a>
-                  <form action="{{ route('appointments.cancel', $appointment) }}" method="POST" class="inline-form">
+                @if($appointment->status !== 'cancelado' && \Illuminate\Support\Carbon::parse($appointment->date)->isFuture())
+                  <form action="{{ route('appointments.cancel', $appointment) }}" method="POST">
                     @csrf
                     <button type="submit" class="btn-small btn-small-danger">Cancelar</button>
                   </form>
                 @endif
+                <button type="button" class="btn-small" onclick="window.location='{{ route('schedule.edit', $appointment) }}'">Editar</button>
               </div>
             </div>
           @endforeach

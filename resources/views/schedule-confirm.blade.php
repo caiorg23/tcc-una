@@ -6,7 +6,7 @@
 <div class="page-wrapper">
   @include('partials.navbar')
 
-  <div class="page-content">
+  <div class="page-content bottom-space">
     <div class="header">
       <div class="header-top">
         <div class="back-btn" onclick="window.location='{{ route('schedule') }}'">‹</div>
@@ -14,6 +14,18 @@
           <h2>Confirmar Agendamento</h2>
           <p>Revise os detalhes antes de finalizar</p>
         </div>
+      </div>
+    </div>
+
+    <div class="progress-steps">
+      <div class="progress-step active">
+        <span class="step-circle">1</span>
+        <span class="step-label">Seleção</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="progress-step active">
+        <span class="step-circle">2</span>
+        <span class="step-label">Confirmação</span>
       </div>
     </div>
 
@@ -54,7 +66,8 @@
       <p class="confirm-note">Caso precise cancelar, avise com pelo menos 3 horas de antecedência para não gerar cobrança adicional.</p>
     </div>
 
-    <div class="proceed-bar">
+    <div class="proceed-bar fixed-bottom">
+      <a href="{{ route('schedule') }}" class="btn-secondary">Voltar</a>
       <form action="{{ route('schedule.done') }}" method="POST">
         @csrf
         <button type="submit" class="btn-proceed">{{ $schedule['appointment_id'] ? 'Atualizar Agendamento' : 'Confirmar Agendamento' }}</button>

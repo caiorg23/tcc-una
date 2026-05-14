@@ -6,7 +6,7 @@
 <div class="page-wrapper">
   @include('partials.navbar')
 
-  <div class="page-content">
+  <div class="page-content bottom-space">
     <div class="header">
       <div class="header-top">
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
@@ -41,10 +41,12 @@
 
       <div class="section-title">O que acontece agora</div>
       <p class="confirm-note">Você pode voltar à home e acompanhar seus próximos agendamentos. Caso queira alterar, entre em contato pelo WhatsApp.</p>
-
-      <button class="btn-primary" onclick="window.location='{{ route('home') }}'">Ir para a Home</button>
-      <button class="btn-secondary" type="button" id="openReviewModal">Avaliar Serviço</button>
     </div>
+  </div>
+
+  <div class="page-footer-actions">
+    <button class="btn-primary" onclick="window.location='{{ route('home') }}'">Ir para a Home</button>
+    <button class="btn-secondary" type="button" id="openReviewModal">Avaliar Serviço</button>
   </div>
 
   <div id="reviewModalBackdrop" class="modal-backdrop hidden" aria-hidden="true" style="display:none;">
@@ -90,11 +92,13 @@
 
     function openModal() {
       backdrop.classList.remove('hidden');
+      backdrop.style.display = 'flex';
       backdrop.setAttribute('aria-hidden', 'false');
     }
 
     function closeModal() {
       backdrop.classList.add('hidden');
+      backdrop.style.display = 'none';
       backdrop.setAttribute('aria-hidden', 'true');
     }
 
@@ -142,9 +146,6 @@
         closeModal();
       }
     });
-
-    // Abre o modal automaticamente quando a página de confirmação for exibida
-    openModal();
   });
 </script>
 @endpush

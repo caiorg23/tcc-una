@@ -6,7 +6,7 @@
 <div class="page-wrapper">
   @include('partials.navbar')
 
-  <div class="page-content">
+  <div class="page-content bottom-space">
     <div class="header">
       <div class="header-top">
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
@@ -18,6 +18,18 @@
       @if(isset($appointment))
         <div class="edit-note">Você está editando o agendamento de {{ date('d/m/Y', strtotime($appointment->date)) }} às {{ $appointment->time }}.</div>
       @endif
+    </div>
+
+    <div class="progress-steps">
+      <div class="progress-step active">
+        <span class="step-circle">1</span>
+        <span class="step-label">Seleção</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="progress-step">
+        <span class="step-circle">2</span>
+        <span class="step-label">Confirmação</span>
+      </div>
     </div>
 
     <div class="container">
@@ -36,6 +48,12 @@
         $selectedServiceIds = old('service_ids', ($appointment && $appointment->service_ids) ? $appointment->service_ids : (($appointment && $appointment->service_id) ? [$appointment->service_id] : [$services->first()->id ?? '']));
         if (is_string($selectedServiceIds)) {
             $selectedServiceIds = array_filter(explode(',', $selectedServiceIds));
+        }
+        if (is_array($selectedServiceIds)) {
+            $selectedServiceIds = array_values(array_filter($selectedServiceIds, fn($id) => $id !== null && $id !== '' && $id !== []));
+        }
+        if (empty($selectedServiceIds)) {
+            $selectedServiceIds = [$services->first()->id ?? ''];
         }
       @endphp
       <form action="{{ route('schedule.confirm') }}" method="POST" id="scheduleForm">
@@ -98,7 +116,7 @@
       </form>
     </div>
 
-    <div class="proceed-bar">
+    <div class="proceed-bar fixed-bottom">
       <div class="selected-count">
         <span id="svcCountLabel">1</span> serviço(s) selecionado(s)
       </div>

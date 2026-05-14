@@ -2051,3 +2051,59 @@ input:focus {
     font-size: 1.4rem;
   }
 }
+
+/* Support Page Styles */
+.support-section {
+  background: rgba(3, 61, 119, 0.3);
+  border: 1px solid rgba(9, 155, 203, 0.3);
+  border-radius: 0.95rem;
+  padding: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.support-section h3 {
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 1rem;
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.faq-question {
+  color: #ffffff;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.faq-answer {
+  color: #A7E0F2;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.support-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.support-actions .btn-primary,
+.support-actions .btn-secondary {
+  flex: 1;
+  min-width: 140px;
+}

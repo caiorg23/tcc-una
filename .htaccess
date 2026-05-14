@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect requests to the public folder when using localhost/TCC-UNA
+    RewriteCond %{REQUEST_URI} !^/TCC-UNA/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Rewrite requests to Laravel front controller
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ public/index.php [L]
+</IfModule>

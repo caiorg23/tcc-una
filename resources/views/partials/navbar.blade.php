@@ -1,7 +1,9 @@
 <nav class="navbar" id="navbar">
   <div class="navbar-container">
     <div class="navbar-logo">
-      <img src="{{ asset('images/cjota-logo.png') }}" alt="CJOTA" class="navbar-logo-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'logo-fallback-small\'>CJOTA</span>'">
+      <a href="{{ route('home') }}">
+        <img src="{{ asset('images/cjota-logo.png') }}" alt="CJOTA" class="navbar-logo-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'logo-fallback-small\'>CJOTA</span>'">
+      </a>
     </div>
 
     <div class="navbar-menu" id="navbarMenu">

@@ -31,10 +31,15 @@ if [ -n "$DATABASE_URL" ] || ([ -n "$DB_HOST" ] && [ -n "$DB_DATABASE" ] && [ -n
     echo "Banco disponível. Executando migrations..."
     php artisan migrate --force --no-interaction
     echo "Migrations executadas com sucesso."
+    
+    echo "Populating services..."
+    php artisan db:seed --class=ServiceSeeder --force
+    echo "Services seeded successfully."
   else
     echo "Aviso: Banco não ficou disponível após aguardar $max_retries tentativas."
     echo "Tentando executar migrations mesmo assim..."
     php artisan migrate --force --no-interaction || echo "Migrations falharam, mas continuando..."
+    php artisan db:seed --class=ServiceSeeder --force || echo "Seeding failed, but continuing..."
   fi
 else
   echo "Variáveis de banco não configuradas. Pulando migrations."

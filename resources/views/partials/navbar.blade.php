@@ -2,7 +2,7 @@
   <div class="navbar-container">
     <div class="navbar-logo">
       <a href="{{ route('home') }}">
-        <img src="{{ asset('images/cjota-logo.png') }}" alt="CJOTA" class="navbar-logo-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'logo-fallback-small\'>CJOTA</span>'">
+        <img src="{{ asset('images/cj-logo-nav.PNG') }}" alt="CJOTA" class="navbar-logo-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'logo-fallback-small\'>CJOTA</span>'">
       </a>
     </div>
 
@@ -10,6 +10,20 @@
       <a href="{{ route('home') }}">Início</a>
       <a href="{{ route('services') }}">Serviços</a>
       <a href="{{ route('schedule') }}">Agendar</a>
+      <a href="{{ route('support') }}">Suporte</a>
+    </div>
+
+    <div class="navbar-actions desktop-only">
+     
+      <a href="https://wa.me/SEUNUMERO" class="social-link" title="WhatsApp" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+      <a href="https://instagram.com" class="social-link" title="Instagram" target="_blank">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="mailto:contato@email.com" class="social-link" title="Email">
+        <i class="fas fa-envelope"></i>
+      </a>
     </div>
 
     @auth
@@ -35,12 +49,12 @@
     </div>
     @endauth
 
-    <div class="navbar-actions desktop-only">
-      @guest
-        <a href="{{ route('login') }}" class="btn-nav-login">Entrar</a>
-        <a href="{{ route('register') }}" class="btn-nav-register">Cadastro</a>
-      @endguest
+    @guest
+    <div class="navbar-actions-guest desktop-only">
+      <a href="{{ route('login') }}" class="btn-nav-login">Entrar</a>
+      <a href="{{ route('register') }}" class="btn-nav-register">Cadastro</a>
     </div>
+    @endguest
 
     <button class="navbar-burger" id="navbarToggle" type="button" aria-label="Abrir menu">
       <span></span>
@@ -51,5 +65,4 @@
 </nav>
 
 <div class="navbar-overlay" id="navbarOverlay"></div>
-
 

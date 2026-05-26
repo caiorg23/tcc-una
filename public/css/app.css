@@ -60,6 +60,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
   gap: 1rem;
   padding: 1rem 2rem;
 }
@@ -68,12 +69,15 @@ button {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  overflow: visible;
 }
 
 .navbar-logo img {
   height: 44px;
   width: auto;
   object-fit: contain;
+  transform: scale(1.2);
+  transform-origin: left center;
 }
 
 .logo-fallback-small {
@@ -88,6 +92,32 @@ button {
   align-items: center;
   gap: 1.75rem;
   list-style: none;
+}
+
+/* Center the menu visually while keeping logo and actions at sides */
+.navbar-menu {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 900px) {
+  .navbar-menu {
+    position: static;
+    transform: none;
+    top: auto;
+    left: auto;
+    gap: 1rem;
+  }
+  .navbar-container {
+    padding: 0.75rem 1rem;
+  }
+  .navbar-actions,
+  .navbar-actions-guest {
+    position: static;
+    margin-left: 0;
+  }
 }
 
 .navbar-menu a {
@@ -105,6 +135,29 @@ button {
   display: flex;
   gap: 1rem;
   align-items: center;
+  margin-left: auto; /* push actions to the right, next to profile */
+  position: relative;
+  z-index: 1200;
+}
+
+.social-link {
+  color: #e9ecef;
+  font-size: 1.3rem;
+  transition: color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-link:hover {
+  color: #099BCB;
+}
+
+.navbar-actions-guest {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: 0.5rem;
 }
 
 .btn-nav {
@@ -135,6 +188,22 @@ button {
 .btn-nav-register:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(9, 155, 203, 0.32);
+}
+
+/* Support button in navbar */
+.btn-nav-support {
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  background: transparent;
+  color: #e9ecef;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.22s ease;
+}
+.btn-nav-support:hover {
+  background: rgba(255,255,255,0.04);
+  color: #099BCB;
+  transform: translateY(-2px);
 }
 
 .navbar-profile {
@@ -299,6 +368,15 @@ button {
   padding: 1.5rem;
 }
 
+.page-wrapper.home-page {
+  overflow: hidden;
+}
+
+.page-content.home-page {
+  min-height: calc(100vh - 90px);
+  overflow: hidden;
+}
+
 /* Home Styles */
 .home-hero {
   margin-bottom: 1.5rem;
@@ -408,7 +486,7 @@ button {
   background: rgba(3, 61, 119, 0.3);
   border: 1px solid rgba(9, 155, 203, 0.3);
   border-radius: 0.95rem;
-  padding: 1.4rem;
+  padding: 1.1rem;
   cursor: pointer;
   transition: all 0.25s ease;
   display: flex;
@@ -548,47 +626,43 @@ button {
   color: white;
 }
 
-/* Location Card */
-.location-card {
-  grid-column: span 2;
-  background: rgba(3, 61, 119, 0.3);
-  border: 1px solid rgba(9, 155, 203, 0.3);
-  border-radius: 0.95rem;
-  padding: 1.4rem;
+/* Location Footer */
+.location-footer {
+  margin-top: 1.5rem;
+  width: 100%;
+  position: relative;
 }
 
-.location-card:hover {
-  background: rgba(3, 61, 119, 0.38);
+.footer-map {
+  width: 100%;
+  height: 220px;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.location-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+.footer-map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.page-content.home-page {
+  min-height: calc(100vh - 90px);
+  padding-bottom: 1rem;
+}
+
+.home-hero {
   margin-bottom: 1rem;
 }
 
-.location-card .card-icon {
-  width: 3.3rem;
-  height: 3.3rem;
+.home-grid {
+  gap: 1rem;
 }
 
-.location-card .card-title {
-  font-size: 1.05rem;
-}
-
-.location-card .card-subtitle {
-  font-size: 0.85rem;
-  color: #b6d8ee;
-}
-
-.map-preview {
-  width: 100%;
-  height: 200px;
-  border-radius: 0.8rem;
-  overflow: hidden;
-  border: 1px solid rgba(9, 155, 203, 0.25);
-  background: rgba(255, 255, 255, 0.04);
+.home-card {
+  min-height: 5px;
 }
 
 .map-preview iframe {
@@ -620,6 +694,12 @@ button {
   margin-bottom: 1rem;
   backdrop-filter: blur(10px);
   font-size: 0.9rem;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, rgba(70, 176, 77, 0.18) 0%, rgba(39, 166, 93, 0.18) 100%);
+  border: 1px solid rgba(70, 176, 77, 0.35);
+  color: #daf7dc;
 }
 
 /* Empty State */
@@ -689,31 +769,133 @@ button {
 
 .date-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
   margin-bottom: 1.6rem;
 }
 
-.date-item {
-  padding: 1rem 0.75rem;
-  background: rgba(3, 61, 119, 0.3);
-  border: 1px solid rgba(9, 155, 203, 0.25);
-  border-radius: 0.95rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #A7E0F2;
+.date-picker-block {
+  display: flex;
+  justify-content: center;
 }
 
-.date-item.selected {
-  background: rgba(9, 155, 203, 0.95);
+.date-picker {
+  width: 100%;
+  max-width: 360px;
+  min-width: 220px;
+  padding: 0.85rem 1rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(9, 155, 203, 0.25);
+  background: rgba(3, 61, 119, 0.3);
+  color: #e9ecef;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.date-picker::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.date-picker::-webkit-datetime-edit-fields-wrapper,
+.date-picker::-webkit-datetime-edit-text,
+.date-picker::-webkit-datetime-edit-month-field,
+.date-picker::-webkit-datetime-edit-day-field,
+.date-picker::-webkit-datetime-edit-year-field {
+  white-space: nowrap;
+}
+
+.date-picker:focus {
+  outline: none;
+  border-color: #099BCB;
+  box-shadow: 0 0 0 2px rgba(9, 155, 203, 0.12);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.calendar-month {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  flex: 1;
+}
+
+.calendar-nav {
+  width: 44px;
+  height: 44px;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(9, 155, 203, 0.25);
+  background: rgba(3, 61, 119, 0.3);
+  color: #A7E0F2;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-nav:hover {
   border-color: #099BCB;
   color: white;
 }
 
-.date-item:hover {
-  transform: translateY(-1px);
+.calendar-dow-row,
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.calendar-dow {
+  color: #8bb9d6;
+  font-size: 0.72rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-day {
+  min-height: 48px;
+  padding: 0.65rem 0.5rem;
+  border-radius: 0.85rem;
+  background: rgba(3, 61, 119, 0.25);
+  border: 1px solid rgba(9, 155, 203, 0.18);
+  color: #A7E0F2;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+  background: rgba(9, 155, 203, 0.18);
   border-color: #099BCB;
+}
+
+.calendar-day.selected {
+  background: #099BCB;
+  border-color: #099BCB;
+  color: white;
+}
+
+.calendar-day.today {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.calendar-day.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: rgba(9, 155, 203, 0.08);
+}
+
+.calendar-day.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
 }
 
 .time-grid {
@@ -756,6 +938,24 @@ button {
   margin-bottom: 1.5rem;
 }
 
+/* Services listing grid (page /services) */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 0.9rem; /* small space between cards */
+  margin-bottom: 1.25rem;
+}
+
+.services-grid .service-card {
+  cursor: pointer;
+}
+
+.service-summary-list li {
+  padding: 0.65rem 0.5rem;
+  border-radius: 0.7rem;
+  background: rgba(3,61,119,0.25);
+}
+
 .service-card {
   display: flex;
   align-items: center;
@@ -770,16 +970,29 @@ button {
 
 .service-card.selectable {
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .service-card:hover {
-  box-shadow: 0 10px 20px rgba(9, 155, 203, 0.12);
+  box-shadow: 0 12px 24px rgba(9, 155, 203, 0.18);
   border-color: #099BCB;
+  transform: translateY(-1px);
 }
 
 .service-card.selected {
-  border-color: #099BCB;
-  background: rgba(9, 155, 203, 0.15);
+  border-color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.2);
+  box-shadow: 0 18px 30px rgba(9, 155, 203, 0.18);
+}
+
+/* Ensure service cards are clickable above overlays */
+.schedule-panel, .schedule-step, #scheduleServiceList {
+  position: relative;
+  z-index: 2;
+}
+.schedule-step[data-step="2"] .service-card {
+  pointer-events: auto;
+  z-index: 3;
 }
 
 .service-icon-box {
@@ -840,6 +1053,35 @@ button {
   color: #A7E0F2;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* Summary sidebar */
+.payment-summary {
+  background: rgba(3,61,119,0.92);
+  padding: 1rem 1rem 0.85rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(9,155,203,0.16);
+  color: #d7ecff;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  margin-bottom: 1rem;
+}
+.payment-summary p {
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+.payment-summary strong {
+  color: #fff;
+}
+
+/* Payment modal */
+.payment-modal { position: fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:2000; }
+.payment-modal-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.6); }
+.payment-modal-content { position:relative; background:#07203a; color:#eaf6ff; padding:1.25rem; border-radius:0.6rem; width:min(560px,95%); border:1px solid rgba(9,155,203,0.18); z-index:2001; }
+.payment-modal-content h3{ margin-top:0; }
+
+/* Responsive: hide summary on small screens to avoid overlap */
+@media (max-width: 1000px) {
+  .payment-summary { display: none; }
 }
 
 .proceed-bar {
@@ -950,14 +1192,42 @@ button {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 50%;
-  background: linear-gradient(135deg, #099BCB 0%, #02569E 100%);
-}
+    width: 0;
+    background: linear-gradient(135deg, #099BCB 0%, #02569E 100%);
+  }
 
-.selected-count {
-  color: #A7E0F2;
-  font-size: 0.95rem;
-}
+  .schedule-progress {
+    position: relative;
+  }
+
+  .schedule-progress .progress-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    z-index: 0;
+  }
+
+  .schedule-progress .progress-track-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(135deg, #099BCB 0%, #02569E 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .schedule-progress .progress-step,
+  .schedule-progress .step-divider {
+    position: relative;
+    z-index: 1;
+  }
 
 .btn-proceed {
   padding: 0.95rem 1.6rem;
@@ -1145,9 +1415,10 @@ button {
 
 .btn-primary {
   padding: 1rem 2.5rem;
-  background: linear-gradient(135deg, #099BCB 0%, #02569E 100%);
+  background: transparent;
   color: white;
   border-radius: 0.6rem;
+  border: 2px solid #A7E0F2;
   font-weight: 700;
   transition: all 0.3s;
   border: none;
@@ -1168,12 +1439,13 @@ button {
 
 .btn-secondary {
   padding: 1rem 2.5rem;
+  background: linear-gradient(135deg, #099BCB 0%, #02569E 100%);
   border: 2px solid #A7E0F2;
-  color: #A7E0F2;
+  color: #fdfdfd;
   border-radius: 0.6rem;
   font-weight: 700;
   transition: all 0.3s;
-  background: transparent;
+  
 }
 
 .btn-secondary:hover {
@@ -1332,6 +1604,29 @@ input[type="email"] {
   color: #1a2a3a;
   transition: all 0.3s;
   font-family: 'Poppins', sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-form .card-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.card-form .card-row input {
+  flex: 1;
+  min-width: calc(50% - 0.375rem);
+}
+
+#cardBlock .card-form input {
+  max-width: 100%;
 }
 
 input[type="text"]::placeholder,
@@ -1348,6 +1643,28 @@ input:focus {
 }
 
 /* Botão Google */
+
+/* Hide native scrollbars but keep scrolling functional
+   - WebKit (Chrome, Safari, newer Edge)
+   - Firefox
+   - IE / legacy Edge
+*/
+html, body, * {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* WebKit browsers */
+*::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: transparent; }
+
+/* Optional: keep focus outlines for accessibility while hiding scrollbars */
+*:focus { outline: none; }
+
 .btn-google {
   width: 100%;
   padding: 0.8rem;
@@ -1514,9 +1831,30 @@ input:focus {
 }
 
 .modal-header h2 {
-  font-size: 1.6rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.75rem;
+  margin-bottom: 0.4rem;
   color: #e9ecef;
+}
+
+.modal-header .modal-text {
+  margin: 0;
+  color: #9ee0ff;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.service-detail-body {
+  margin-top: 0.75rem;
+}
+
+.service-detail-price {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.service-detail-price strong {
+  color: #08c1ff;
 }
 
 .modal-body {

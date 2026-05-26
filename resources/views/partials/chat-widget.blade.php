@@ -1,6 +1,6 @@
 <div class="chat-widget" id="chatWidget">
   <div class="chat-dot"></div>
-  <button class="chat-btn" onclick="toggleChat()">💬</button>
+  <button class="chat-btn" onclick="toggleChat()">🤖</button>
 </div>
 
 <div class="chat-panel" id="chatPanel">

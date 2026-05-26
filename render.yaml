@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: tcc-una
+    env: docker
+    plan: free
+    branch: main
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://tcc-una.onrender.com
+      - key: LOG_CHANNEL
+        value: stack
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: FILESYSTEM_DRIVER
+        value: local
+      - key: MAIL_MAILER
+        value: smtp
+      - key: APP_KEY
+        generator: secret

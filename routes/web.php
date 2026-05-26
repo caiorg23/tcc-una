@@ -24,6 +24,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [SiteController::class, 'authenticate'])->name('authenticate');
     Route::get('/register', [SiteController::class, 'register'])->name('register');
     Route::post('/register', [SiteController::class, 'registerUser'])->name('register.user');
+    Route::get('/auth/google', [SiteController::class, 'googleRedirect'])->name('google.login');
+    Route::get('/password/reset', [SiteController::class, 'showPasswordResetForm'])->name('password.request');
+    Route::post('/password/reset', [SiteController::class, 'sendPasswordResetLink'])->name('password.email');
 });
 
 Route::middleware('auth')->group(function () {

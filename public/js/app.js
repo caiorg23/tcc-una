@@ -2063,37 +2063,37 @@ module.exports = {
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 var services = window.appServices || [{
   name: 'Higienização Interna',
-  desc: 'Limpeza profunda do interior do veículo',
+  description: 'Serviço completo de limpeza interna focado na remoção de sujeiras, odores, poeira, manchas leves e bactérias presentes no veículo. Inclui aspiração detalhada, limpeza de bancos, painéis, portas, carpetes e cantos difíceis. Deixa o interior mais limpo, cheiroso e agradável, trazendo sensação de carro novo e maior conforto no dia a dia.',
   price: 'R$ 80',
   icon: '✨',
   bg: '#ede9fe'
 }, {
   name: 'Lavagem Externa',
-  desc: 'Lavagem completa da parte externa',
+  description: 'Limpeza rápida e eficiente da parte externa do veículo, removendo poeira, barro, manchas e sujeiras acumuladas no dia a dia. Inclui lavagem da lataria, rodas, pneus e vidros externos, deixando o carro com brilho renovado e visual muito mais bonito.',
   price: 'R$ 40',
   icon: '💧',
   bg: '#dbeafe'
 }, {
   name: 'Lavagem Completa',
-  desc: 'Higienização interna e lavagem externa',
+  description: 'Lavagem detalhada da parte externa e interna do veículo, utilizando produtos automotivos específicos para preservar a pintura e os acabamentos. Inclui limpeza da lataria, rodas, pneus, vidros e aspiração interna. Um serviço ideal pra manter o carro sempre bonito, conservado e com aparência impecável.',
   price: 'R$ 110',
   icon: '🌀',
   bg: '#dcfce7'
 }, {
   name: 'Proteção de Pintura',
-  desc: 'Proteção e conservação da pintura',
+  description: 'Aplicação de produtos protetores de alta qualidade que criam uma camada de proteção sobre a pintura do veículo. Ajuda a preservar o brilho, reduz danos causados pelo sol, chuva, poluição e sujeiras do dia a dia. Além de aumentar a durabilidade da pintura, facilita futuras lavagens e mantém o carro com aspecto de recém-polido por mais tempo.',
   price: 'R$ 150',
   icon: '🛡️',
   bg: '#fef3c7'
 }, {
   name: 'Polimento Técnico',
-  desc: 'Polimento profissional da pintura',
+  description: 'Processo especializado para revitalização da pintura automotiva, removendo riscos superficiais, marcas de lavagem, hologramas e queimaduras leves do verniz. O polimento devolve brilho intenso e profundidade à pintura, deixando o carro com aparência muito mais nova e sofisticada. Ideal pra quem quer recuperar o visual premium do veículo.',
   price: 'R$ 200',
   icon: '💎',
   bg: '#fbcfe8'
 }, {
   name: 'Cristalização dos Vidros',
-  desc: 'Tratamento especial para os vidros',
+  description: 'A cristalização dos vidros cria uma camada protetora hidrofóbica que repele água, poeira e sujeiras, melhorando drasticamente a visibilidade em dias de chuva. Além de deixar os vidros com aparência mais limpa e brilhante, ajuda a evitar manchas causadas pelo tempo e reduz o acúmulo de resíduos. Ideal pra quem busca mais segurança, conforto ao dirigir e um acabamento premium no veículo.',
   price: 'R$ 120',
   icon: '👁️',
   bg: '#dbeafe'
@@ -2185,7 +2185,33 @@ function buildSchedule() {
   if (!grid) {
     return;
   }
+  var pickerBlock = grid.querySelector('.date-picker-block');
+  var pickerInput = pickerBlock === null || pickerBlock === void 0 ? void 0 : pickerBlock.querySelector('#datePicker');
+  var preservedPicker = pickerBlock && pickerInput;
+  var todayDate = new Date().toISOString().slice(0,10);
+
   grid.innerHTML = '';
+
+  if (preservedPicker) {
+    pickerInput.min = todayDate;
+    var block = document.createElement('div');
+    block.className = 'date-picker-block';
+    block.appendChild(pickerInput);
+    grid.appendChild(block);
+  } else {
+    var _block = document.createElement('div');
+    _block.className = 'date-picker-block';
+    var input = document.createElement('input');
+    input.type = 'date';
+    input.id = 'datePicker';
+    input.className = 'date-picker';
+    input.min = todayDate;
+    input.onchange = function () {
+      return syncDateInput(input);
+    };
+    _block.appendChild(input);
+    grid.appendChild(_block);
+  }
   var _loop = function _loop() {
     var d = new Date(today);
     d.setDate(today.getDate() + i);
@@ -2235,6 +2261,21 @@ function buildServicesList() {
   if (!container) {
     return;
   }
+  // If server-side already rendered the service cards, don't overwrite them; attach handlers instead
+  if (container.querySelector('.service-card')) {
+    var _cards2 = container.querySelectorAll('.service-card');
+    _cards2.forEach(function (card) {
+      card.addEventListener('click', function () {
+        var id = card.dataset.serviceId;
+        var svc = (window.appServices || []).find(function (x) {
+          return String(x.id) === String(id);
+        });
+        if (svc) openServiceModal(svc);
+      });
+    });
+    return;
+  }
+
   container.innerHTML = '';
   services.forEach(function (service) {
     var icon = service.icon || '🔧';
@@ -2244,9 +2285,18 @@ function buildServicesList() {
     var iconClass = iconBg.startsWith('#') ? '' : " ".concat(iconBg);
     var iconStyle = iconBg.startsWith('#') ? "style=\"background:".concat(iconBg, "\"") : '';
     var card = document.createElement('div');
-    card.className = 'service-card';
-    card.style.cursor = 'default';
-    card.innerHTML = "\n      <div class=\"service-icon-box".concat(iconClass, "\" ").concat(iconStyle, ">").concat(iconHtml, "</div>\n      <div class=\"service-info\">\n        <div class=\"service-name\">").concat(service.name, "</div>\n        <div class=\"service-desc\">").concat(service.description || service.desc || '', "</div>\n      </div>\n      <div class=\"service-price\">").concat(service.price, "</div>\n    ");
+    card.className = 'service-card selectable';
+    card.style.cursor = 'pointer';
+    card.setAttribute('data-service-id', service.id || '');
+    card.innerHTML = "<div class=\"service-icon-box" + iconClass + "\" " + iconStyle + ">" + iconHtml + "</div>" +
+      "<div class=\"service-info\">" +
+      "<div class=\"service-name\">" + service.name + "</div>" +
+      "<div class=\"service-desc\">" + (service.description || service.desc || '') + "</div>" +
+      "</div>" +
+      "<div class=\"service-price\">" + service.price + "</div>";
+    card.addEventListener('click', function () {
+      openServiceModal(service);
+    });
     container.appendChild(card);
   });
 }
@@ -2280,30 +2330,64 @@ function setSelectedDate(value) {
   }
 }
 function selectService(el) {
-  if (!el.classList.contains('selectable')) {
+  console.log('public selectService called', el && el.dataset && el.dataset.serviceId);
+  if (!el || !el.classList.contains('selectable')) {
     return;
   }
   var serviceIdsInput = document.getElementById('selectedServiceIds');
   var serviceIdInput = document.getElementById('selectedServiceId');
-  var currentIds = (serviceIdsInput === null || serviceIdsInput === void 0 ? void 0 : serviceIdsInput.value.split(',').filter(Boolean)) || [];
-  var serviceId = el.dataset.serviceId || '';
+  var container = document.getElementById('serviceIdsContainer');
+
+  // Get current selected IDs from hidden inputs if available
+  var currentIds = [];
+  if (container) {
+    var hiddenInputs = container.querySelectorAll('input[name="service_ids[]"]');
+    hiddenInputs.forEach(function (input) {
+      if (input.value && input.value.trim() !== '') {
+        currentIds.push(input.value.trim());
+      }
+    });
+  }
+
+  // Fallback to the comma-separated input
+  if (currentIds.length === 0 && serviceIdsInput !== null && serviceIdsInput !== void 0 && serviceIdsInput.value) {
+    currentIds = serviceIdsInput.value.split(',').filter(function (id) {
+      return id && id.trim() !== '';
+    });
+  }
+  var serviceId = el.dataset.serviceId || el.getAttribute('data-service-id') || '';
+  if (!serviceId) {
+    console.error('Service ID not found on element', el);
+    return;
+  }
   var index = currentIds.indexOf(serviceId);
   if (index >= 0) {
+    // Remove from selection
     currentIds.splice(index, 1);
     el.classList.remove('selected');
   } else {
+    // Add to selection
     currentIds.push(serviceId);
     el.classList.add('selected');
   }
-  var firstId = currentIds[0] || '';
+
+  // Update the first service ID
+  var firstId = currentIds.length > 0 ? currentIds[0] : '';
+
+  // Update hidden inputs
   if (serviceIdsInput) {
     serviceIdsInput.value = currentIds.join(',');
   }
   if (serviceIdInput) {
     serviceIdInput.value = firstId;
   }
+
+  // Sync the hidden input array
   syncSelectedServiceInputs(currentIds);
+
+  // Update count display
   updateCount();
+  console.log('Selected services:', currentIds); // Debug log
 }
 function selectTime(el) {
   if (el.classList.contains('busy')) {

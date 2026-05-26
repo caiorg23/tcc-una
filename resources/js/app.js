@@ -1,12 +1,12 @@
 require('./bootstrap');
 
 const services = window.appServices || [
-  { name: 'Higienização Interna', desc: 'Limpeza profunda do interior do veículo', price: 'R$ 80', icon: '✨', bg: '#ede9fe' },
-  { name: 'Lavagem Externa', desc: 'Lavagem completa da parte externa', price: 'R$ 40', icon: '💧', bg: '#dbeafe' },
-  { name: 'Lavagem Completa', desc: 'Higienização interna e lavagem externa', price: 'R$ 110', icon: '🌀', bg: '#dcfce7' },
-  { name: 'Proteção de Pintura', desc: 'Proteção e conservação da pintura', price: 'R$ 150', icon: '🛡️', bg: '#fef3c7' },
-  { name: 'Polimento Técnico', desc: 'Polimento profissional da pintura', price: 'R$ 200', icon: '💎', bg: '#fbcfe8' },
-  { name: 'Cristalização dos Vidros', desc: 'Tratamento especial para os vidros', price: 'R$ 120', icon: '👁️', bg: '#dbeafe' },
+  { name: 'Higienização Interna', description: 'Serviço completo de limpeza interna focado na remoção de sujeiras, odores, poeira, manchas leves e bactérias presentes no veículo. Inclui aspiração detalhada, limpeza de bancos, painéis, portas, carpetes e cantos difíceis. Deixa o interior mais limpo, cheiroso e agradável, trazendo sensação de carro novo e maior conforto no dia a dia.', price: 'R$ 80', icon: '✨', bg: '#ede9fe' },
+  { name: 'Lavagem Externa', description: 'Limpeza rápida e eficiente da parte externa do veículo, removendo poeira, barro, manchas e sujeiras acumuladas no dia a dia. Inclui lavagem da lataria, rodas, pneus e vidros externos, deixando o carro com brilho renovado e visual muito mais bonito.', price: 'R$ 40', icon: '💧', bg: '#dbeafe' },
+  { name: 'Lavagem Completa', description: 'Lavagem detalhada da parte externa e interna do veículo, utilizando produtos automotivos específicos para preservar a pintura e os acabamentos. Inclui limpeza da lataria, rodas, pneus, vidros e aspiração interna. Um serviço ideal pra manter o carro sempre bonito, conservado e com aparência impecável.', price: 'R$ 110', icon: '🌀', bg: '#dcfce7' },
+  { name: 'Proteção de Pintura', description: 'Aplicação de produtos protetores de alta qualidade que criam uma camada de proteção sobre a pintura do veículo. Ajuda a preservar o brilho, reduz danos causados pelo sol, chuva, poluição e sujeiras do dia a dia. Além de aumentar a durabilidade da pintura, facilita futuras lavagens e mantém o carro com aspecto de recém-polido por mais tempo.', price: 'R$ 150', icon: '🛡️', bg: '#fef3c7' },
+  { name: 'Polimento Técnico', description: 'Processo especializado para revitalização da pintura automotiva, removendo riscos superficiais, marcas de lavagem, hologramas e queimaduras leves do verniz. O polimento devolve brilho intenso e profundidade à pintura, deixando o carro com aparência muito mais nova e sofisticada. Ideal pra quem quer recuperar o visual premium do veículo.', price: 'R$ 200', icon: '💎', bg: '#fbcfe8' },
+  { name: 'Cristalização dos Vidros', description: 'A cristalização dos vidros cria uma camada protetora hidrofóbica que repele água, poeira e sujeiras, melhorando drasticamente a visibilidade em dias de chuva. Além de deixar os vidros com aparência mais limpa e brilhante, ajuda a evitar manchas causadas pelo tempo e reduz o acúmulo de resíduos. Ideal pra quem busca mais segurança, conforto ao dirigir e um acabamento premium no veículo.', price: 'R$ 120', icon: '👁️', bg: '#dbeafe' },
 ];
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -42,6 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
     syncSelectedServiceInputs(serviceIds);
+    updateScheduleSummary();
   }
 
   const navbarToggle = document.getElementById('navbarToggle');
@@ -103,7 +104,31 @@ function buildSchedule() {
     return;
   }
 
+  const pickerBlock = grid.querySelector('.date-picker-block');
+  const pickerInput = pickerBlock?.querySelector('#datePicker');
+  const preservedPicker = pickerBlock && pickerInput;
+  const todayDate = new Date().toISOString().slice(0,10);
+
   grid.innerHTML = '';
+
+  if (preservedPicker) {
+    pickerInput.min = todayDate;
+    const block = document.createElement('div');
+    block.className = 'date-picker-block';
+    block.appendChild(pickerInput);
+    grid.appendChild(block);
+  } else {
+    const block = document.createElement('div');
+    block.className = 'date-picker-block';
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.id = 'datePicker';
+    input.className = 'date-picker';
+    input.min = todayDate;
+    input.onchange = () => syncDateInput(input);
+    block.appendChild(input);
+    grid.appendChild(block);
+  }
 
   for (let i = 1; i <= maxDays; i += 1) {
     const d = new Date(today);
@@ -164,6 +189,19 @@ function buildServicesList() {
   if (!container) {
     return;
   }
+  // If server-side already rendered service cards, do not overwrite them — only attach handlers
+  if (container.querySelector('.service-card')) {
+    // ensure the cards created server-side will open the modal when clicked
+    const cards = container.querySelectorAll('.service-card');
+    cards.forEach((card) => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.serviceId;
+        const svc = (window.appServices || []).find((x) => String(x.id) === String(id));
+        if (svc) openServiceModal(svc);
+      });
+    });
+    return;
+  }
 
   container.innerHTML = '';
   services.forEach((service) => {
@@ -176,8 +214,9 @@ function buildServicesList() {
     const iconStyle = iconBg.startsWith('#') ? `style="background:${iconBg}"` : '';
 
     const card = document.createElement('div');
-    card.className = 'service-card';
-    card.style.cursor = 'default';
+    card.className = 'service-card selectable';
+    card.style.cursor = 'pointer';
+    card.setAttribute('data-service-id', service.id || '');
     card.innerHTML = `
       <div class="service-icon-box${iconClass}" ${iconStyle}>${iconHtml}</div>
       <div class="service-info">
@@ -186,6 +225,9 @@ function buildServicesList() {
       </div>
       <div class="service-price">${service.price}</div>
     `;
+    card.addEventListener('click', () => {
+      openServiceModal(service);
+    });
     container.appendChild(card);
   });
 }
@@ -223,6 +265,47 @@ function setSelectedDate(value) {
   if (dateInput) {
     dateInput.value = value;
   }
+  updateScheduleSummary();
+}
+
+function getServiceName(id) {
+  const service = services.find((item) => String(item.id) === String(id));
+  return service ? service.name : 'Serviço';
+}
+
+function formatDatePtBR(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function updateScheduleSummary() {
+  const dateValue = document.getElementById('selectedDate')?.value || '';
+  const timeValue = document.getElementById('selectedTime')?.value || '';
+  const serviceIds = document.getElementById('selectedServiceIds')?.value.split(',').filter(Boolean) || [];
+  const summaryDate = document.getElementById('summaryDate');
+  const summaryTime = document.getElementById('summaryTime');
+  const summaryCount = document.getElementById('summaryCount');
+  const summaryServices = document.getElementById('summaryServices');
+
+  if (summaryDate) {
+    summaryDate.textContent = dateValue ? formatDatePtBR(dateValue) : 'Selecione';
+  }
+  if (summaryTime) {
+    summaryTime.textContent = timeValue || 'Selecione';
+  }
+  if (summaryCount) {
+    summaryCount.textContent = serviceIds.length;
+  }
+  if (summaryServices) {
+    summaryServices.textContent = serviceIds.length > 0 ? serviceIds.map(getServiceName).join(', ') : 'Nenhum serviço selecionado';
+  }
 }
 
 function selectService(el) {
@@ -252,8 +335,8 @@ function selectService(el) {
     serviceIdInput.value = firstId;
   }
   syncSelectedServiceInputs(currentIds);
-
   updateCount();
+  updateScheduleSummary();
 }
 
 function selectTime(el) {
@@ -268,6 +351,7 @@ function selectTime(el) {
   if (timeInput) {
     timeInput.value = el.textContent.trim();
   }
+  updateScheduleSummary();
 }
 
 window.selectTime = selectTime;

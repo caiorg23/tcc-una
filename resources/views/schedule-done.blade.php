@@ -39,8 +39,7 @@
         </div>
       </div>
 
-      <div class="section-title">O que acontece agora</div>
-      <p class="confirm-note">Você pode voltar à home e acompanhar seus próximos agendamentos. Caso queira alterar, entre em contato pelo WhatsApp.</p>
+      
     </div>
   </div>
 

@@ -41,6 +41,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/schedule/confirm', [SiteController::class, 'scheduleConfirm'])->name('schedule.confirm');
     Route::post('/schedule/done', [SiteController::class, 'scheduleDone'])->name('schedule.done');
     Route::post('/appointments/{appointment}/cancel', [SiteController::class, 'cancelAppointment'])->name('appointments.cancel');
+    Route::delete('/appointments/{appointment}', [SiteController::class, 'destroyAppointment'])->name('appointments.destroy');
+    Route::put('/appointments/{appointment}', [SiteController::class, 'updateAppointment'])->name('appointments.update');
     Route::get('/about', [SiteController::class, 'about'])->name('about');
     Route::get('/contact', [SiteController::class, 'contact'])->name('contact');
 });

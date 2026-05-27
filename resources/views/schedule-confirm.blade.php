@@ -72,6 +72,7 @@
 
   @include('partials.chat-widget')
 
+  <!-- Cancel Policy Modal -->
   <div id="cancelPolicyModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="cancelPolicyTitle" style="display:none; align-items:center; justify-content:center; padding:1rem;">
     <div class="confirm-modal" style="background:#0a0e27; border-radius:16px; max-width:520px; width:100%; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,0.18); position:relative;">
       <button type="button" class="modal-close" id="cancelPolicyClose" aria-label="Fechar" style="position:absolute; top:14px; right:14px; border:none; background:none; font-size:1.5rem; cursor:pointer;">×</button>
@@ -87,10 +88,47 @@
       </div>
     </div>
   </div>
+
+  <!-- Review Modal -->
+  <div id="reviewModalBackdrop" class="modal-backdrop hidden" aria-hidden="true" style="display:none;">
+    <div class="review-modal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+      <button type="button" class="modal-close" id="reviewModalClose" aria-label="Fechar avaliação">×</button>
+      <h3 id="reviewModalTitle">Como foi seu atendimento?</h3>
+      <div class="review-average-card">
+        <div class="review-average-title">CJOTA Estética Automotiva</div>
+        <div class="review-average-score">
+          <strong id="reviewAverageValue">4,5</strong>
+          <span class="review-average-stars">★★★★☆</span>
+          <small id="reviewAverageCount">(23)</small>
+        </div>
+      
+      </div>
+      <p class="modal-text">Sua opinião nos ajuda a melhorar. Avalie o serviço e deixe um comentário rápido.</p>
+
+      <div class="rating-stars" id="reviewStars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+
+      <textarea id="reviewComment" placeholder="Escreva sua avaliação (opcional)"></textarea>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="reviewLater">Avaliar depois</button>
+        <button type="button" class="btn-primary" id="submitReview">Enviar avaliação</button>
+      </div>
+
+      <div class="review-success hidden" id="reviewSuccess">Obrigado pela avaliação! 😊</div>
+    </div>
+  </div>
 </div>
 
 @push('scripts')
 <script>
+  let ratingValue = 0;
+
   function openCancelPolicyModal() {
     const modal = document.getElementById('cancelPolicyModal');
     const checkbox = document.getElementById('cancelPolicyAgree');
@@ -119,12 +157,50 @@
     confirmButton.disabled = !checkbox.checked;
   }
 
+  function openReviewModal() {
+    const backdrop = document.getElementById('reviewModalBackdrop');
+    if (!backdrop) return;
+    backdrop.classList.remove('hidden');
+    backdrop.style.display = 'flex';
+    backdrop.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeReviewModal() {
+    const backdrop = document.getElementById('reviewModalBackdrop');
+    if (!backdrop) return;
+    backdrop.classList.add('hidden');
+    backdrop.style.display = 'none';
+    backdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function updateStars(value) {
+    ratingValue = value;
+    const stars = document.querySelectorAll('#reviewStars .star');
+    stars.forEach((star) => {
+      const starValue = Number(star.dataset.value);
+      star.classList.toggle('selected', starValue <= value);
+    });
+    updateAverageSummary(value);
+  }
+
+  function updateAverageSummary(value){
+    // Mantém valores fixos: média 4,5 e 23 avaliações.
+    return;
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     const cancelPolicyClose = document.getElementById('cancelPolicyClose');
     const cancelPolicyCancel = document.getElementById('cancelPolicyCancel');
     const cancelPolicyConfirm = document.getElementById('cancelPolicyConfirm');
     const cancelPolicyAgree = document.getElementById('cancelPolicyAgree');
     const form = document.getElementById('confirmScheduleForm');
+    const reviewBackdrop = document.getElementById('reviewModalBackdrop');
+    const reviewClose = document.getElementById('reviewModalClose');
+    const reviewLater = document.getElementById('reviewLater');
+    const submitReviewBtn = document.getElementById('submitReview');
+    const reviewComment = document.getElementById('reviewComment');
+    const successMessage = document.getElementById('reviewSuccess');
+    const reviewStars = document.querySelectorAll('#reviewStars .star');
 
     if (cancelPolicyClose) {
       cancelPolicyClose.addEventListener('click', closeCancelPolicyModal);
@@ -138,19 +214,61 @@
       cancelPolicyAgree.addEventListener('change', updateCancelPolicyConfirm);
     }
 
-    if (cancelPolicyConfirm && form) {
+    if (cancelPolicyConfirm) {
       cancelPolicyConfirm.addEventListener('click', function () {
         if (cancelPolicyAgree && cancelPolicyAgree.checked) {
-          form.submit();
+          closeCancelPolicyModal();
+          openReviewModal();
         }
       });
     }
+
+    if (reviewClose) {
+      reviewClose.addEventListener('click', closeReviewModal);
+    }
+
+    if (reviewLater) {
+      reviewLater.addEventListener('click', function () {
+        if (form) form.submit();
+      });
+    }
+
+    if (submitReviewBtn) {
+      submitReviewBtn.addEventListener('click', function () {
+        successMessage.classList.remove('hidden');
+        successMessage.textContent = ratingValue > 0
+          ? 'Obrigado pela avaliação! 😊'
+          : 'Obrigado! Sua opinião será considerada.';
+        reviewComment.value = '';
+        setTimeout(() => {
+          if (form) form.submit();
+        }, 1800);
+      });
+    }
+
+    reviewStars.forEach((star) => {
+      star.addEventListener('mouseenter', () => {
+        updateStars(Number(star.dataset.value));
+      });
+
+      star.addEventListener('click', () => {
+        updateStars(Number(star.dataset.value));
+      });
+    });
 
     const backdrop = document.getElementById('cancelPolicyModal');
     if (backdrop) {
       backdrop.addEventListener('click', function (event) {
         if (event.target === backdrop) {
           closeCancelPolicyModal();
+        }
+      });
+    }
+
+    if (reviewBackdrop) {
+      reviewBackdrop.addEventListener('click', function (event) {
+        if (event.target === reviewBackdrop) {
+          closeReviewModal();
         }
       });
     }

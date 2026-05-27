@@ -68,8 +68,11 @@
             }
             $summaryServices = $services->whereIn('id', $selectedServiceIds)->pluck('name')->toArray();
           @endphp
-          <form action="{{ route('schedule.confirm') }}" method="POST" id="scheduleForm">
+          <form action="{{ isset($appointment) ? route('appointments.update', $appointment) : route('schedule.confirm') }}" method="POST" id="scheduleForm">
             @csrf
+            @if(isset($appointment))
+              @method('PUT')
+            @endif
             <input type="hidden" name="appointment_id" id="appointmentId" value="{{ $appointment?->id ?? '' }}">
             <input type="hidden" name="service_id" id="selectedServiceId" value="{{ $selectedServiceIds[0] ?? '' }}">
             <div id="serviceIdsContainer">
@@ -87,12 +90,12 @@
                 <div class="section-title">Escolha a data</div>
                 <div class="date-grid" id="dateGrid">
                   <div class="date-picker-block">
-                    <input type="date" id="datePicker" class="date-picker" onchange="syncDateInput(this)" min="{{ date('Y-m-d') }}" />
+                    <input type="date" id="datePicker" class="date-picker" onchange="syncDateInput(this)" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ old('date', $appointment?->date ?? date('Y-m-d', strtotime('+1 day'))) }}" style="width:100%; padding:16px 18px; font-size:1.05rem;" />
                   </div>
                 </div>
               </div>
 
-              <div class="schedule-section schedule-time-section">
+              <div class="schedule-section schedule-time-section" id="timeSection" style="display:none;">
                 <div class="section-title">Horários disponíveis</div>
                 <div class="time-grid">
                   <div class="time-item busy">08:00</div>
@@ -114,15 +117,28 @@
                 <div id="scheduleServiceList" class="schedule-service-list">
                   @foreach($services as $service)
                     @php
-                      $serviceIcon = $service->icon ?? '🔧';
-                      $serviceBg = $service->bg ?? '#d1fae5';
-                      $serviceBgClass = str_starts_with($serviceBg, '#') ? '' : $serviceBg;
-                      $serviceBgStyle = str_starts_with($serviceBg, '#') ? "background: {$serviceBg};" : '';
+                      $serviceIcon = $service->icon ?? 'bi bi-question-circle';
+                      // map legacy emojis to bootstrap icon classes
+                      $iconMap = [
+                        '✨' => 'bi bi-stars',
+                        '💧' => 'bi bi-droplet',
+                        '🌀' => 'bi bi-bucket',
+                        '🛡️' => 'bi bi-shield-lock',
+                        '💎' => 'bi bi-gem',
+                        '👁️' => 'bi bi-eye',
+                        '🔧' => 'bi bi-tools',
+                      ];
+                      $serviceIcon = $iconMap[$serviceIcon] ?? $serviceIcon;
+                      if (!is_string($serviceIcon) || (!str_starts_with($serviceIcon, 'fa') && !str_starts_with($serviceIcon, 'bi'))) {
+                        $serviceIcon = 'bi bi-question-circle';
+                      }
+                      $serviceBg = $service->bg ?? null;
+                      $serviceBgClass = $serviceBg && !str_starts_with($serviceBg, '#') ? $serviceBg : '';
                       $isSelected = in_array($service->id, $selectedServiceIds);
                     @endphp
                     <div class="service-card selectable{{ $isSelected ? ' selected' : '' }}" data-service-id="{{ $service->id }}" onclick="selectService(this)">
-                      <div class="service-icon-box {{ $serviceBgClass }}" style="{{ $serviceBgStyle }}">
-                        @if(is_string($serviceIcon) && str_starts_with($serviceIcon, 'fa'))
+                      <div class="service-icon-box {{ $serviceBgClass }}">
+                        @if(is_string($serviceIcon) && (str_starts_with($serviceIcon, 'fa') || str_starts_with($serviceIcon, 'bi')))
                           <i class="{{ $serviceIcon }}"></i>
                         @else
                           {{ $serviceIcon }}
@@ -139,17 +155,27 @@
               </div>
             </div>
 
+            @unless(isset($appointment))
             <div class="schedule-step" data-step="3" style="display:none;">
               <div class="schedule-section">
                 <div class="section-title">Pagamento - Depósito de 30%</div>
                 <p>Por segurança da CJOTA, é necessário efetuar 30% do valor dos serviços selecionados para confirmar o agendamento.</p>
-                <div class="payment-summary">
-                  <p><strong>Serviços selecionados:</strong> <span id="summaryServices">@if(!empty($summaryServices)){{ implode(', ', $summaryServices) }}@else Nenhum serviço selecionado @endif</span></p>
-                  <p><strong>Total:</strong> <span id="summaryTotal">R$ 0,00</span></p>
+                <div class="payment-summary" style="margin-top:1rem;">
+                  <p style="margin-bottom:0.5rem;"><strong>Serviços selecionados:</strong></p>
+                  <ul id="summaryServices" class="summary-services-list">
+                    @if(!empty($summaryServices))
+                      @foreach($summaryServices as $s)
+                        <li>{{ $s }}</li>
+                      @endforeach
+                    @else
+                      <li>Nenhum serviço selecionado</li>
+                    @endif
+                  </ul>
+                  <p style="margin-top:0.75rem;"><strong>Total:</strong> <span id="summaryTotal">R$ 0,00</span></p>
                 </div>
-                <div id="paymentOptions">
-                  <label style="margin-right:1rem;"><input type="radio" name="payment_method" value="pix" onchange="showPayment('pix')"> PIX</label>
-                  <label><input type="radio" name="payment_method" value="card" onchange="showPayment('card')"> Cartão</label>
+                <div id="paymentOptions" style="display:flex; gap:0.75rem; align-items:center; margin-top:0.75rem;">
+                  <label class="payment-option" style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.6rem;border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;"><input type="radio" name="payment_method" value="pix" onchange="showPayment('pix')"> PIX</label>
+                  <label class="payment-option" style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.6rem;border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;"><input type="radio" name="payment_method" value="card" onchange="showPayment('card')"> Cartão</label>
                 </div>
 
                 <div id="pixBlock" style="display:none; margin-top:1rem;">
@@ -174,6 +200,7 @@
                 <button type="button" id="startPaymentBtn" class="btn-proceed" onclick="startPayment()">Iniciar pagamento</button>
               </div>
             </div>
+            @endunless
           </form>
         </div>
       </main>
@@ -183,9 +210,6 @@
 
     <div class="proceed-bar fixed-bottom">
       <button type="button" id="bottomBackBtn" class="btn-secondary" onclick="prevStep()" style="display:none;">Voltar</button>
-      <div class="selected-count">
-        <span id="svcCountLabel">{{ count($selectedServiceIds) }}</span> serviço(s) selecionado(s)
-      </div>
       <button type="button" id="bottomContinueBtn" class="btn-proceed" onclick="nextStep()">Continuar</button>
       <button type="submit" id="bottomConfirmBtn" form="scheduleForm" class="btn-proceed" style="display:none;">Confirmar</button>
     </div>
@@ -200,13 +224,19 @@
       <h3>Política de Pagamento</h3>
       <p>Por segurança da CJOTA será cobrado 30% do valor dos serviços selecionados. Em caso de cancelamento não haverá reembolso desses 30%.</p>
       <p>Se houver um imprevisto, o cliente poderá escolher outra data e o valor já pago será mantido como crédito para o novo agendamento.</p>
-    <div id="pixQrModalContainer" style="margin:0.5rem 0; display:none; text-align:center;"></div>
-    <p><strong>Valor do depósito:</strong> <span class="modal-deposit">R$ 0,00</span></p>
+      <div id="pixQrModalContainer" style="margin:0.5rem 0; display:none; text-align:center;"></div>
+      <div id="modalPixCountdown" style="display:none; margin:0.5rem 0; text-align:center; font-weight:700; color:#b6e2ff;"></div>
+      <div id="paymentSuccessContainer" style="display:none; margin:1rem auto 0; max-width:280px; text-align:center;">
+        <div class="payment-success-badge">
+          <i class="bi bi-check-lg"></i>
+        </div>
+        <p style="margin-top:1rem; font-size:1rem; font-weight:700; color:#e4f9e0;">Pagamento confirmado!</p>
+      </div>
+      <p><strong>Valor do depósito:</strong> <span class="modal-deposit">R$ 0,00</span></p>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;"><button class="btn-secondary" onclick="closePaymentModal()">Fechar</button></div>
     </div>
   </div>
 </div>
-@endsection
 
 @push('scripts')
 <script>
@@ -265,7 +295,7 @@
 
   function prevStep(){ showStep(Math.max(1, currentStep-1)); }
 
-  function syncDateInput(el){
+  function syncDateInput(el, showTime = true){
     const pickedDate = el.value;
     document.getElementById('selectedDate').value = pickedDate;
     const summaryDate = document.getElementById('summaryDate');
@@ -273,6 +303,11 @@
       summaryDate.innerText = pickedDate ? pickedDate.split('-').reverse().join('/') : 'Selecione';
     }
     try{ localStorage.setItem('schedule_selected_date', pickedDate || ''); }catch(e){}
+    // Mostrar seção de horários somente depois de escolher a data
+    const timeSection = document.getElementById('timeSection');
+    if(timeSection){
+      timeSection.style.display = showTime && pickedDate ? 'block' : 'none';
+    }
   }
 
   function selectTime(el){
@@ -302,7 +337,11 @@
     const names = Array.from(document.querySelectorAll('.service-card.selected .service-name')).map(n=> n.innerText.trim());
     const summaryServices = document.getElementById('summaryServices');
     if(summaryServices){
-      summaryServices.innerText = names.join(', ') || 'Nenhum serviço selecionado';
+      if(names.length>0){
+        summaryServices.innerHTML = names.map(n=> `<li>${n}</li>`).join('');
+      } else {
+        summaryServices.innerHTML = '<li>Nenhum serviço selecionado</li>';
+      }
     }
     const svcLabel = document.getElementById('svcCountLabel');
     if(svcLabel){
@@ -325,7 +364,13 @@
     const summaryServices = document.getElementById('summaryServices');
     const summaryTotal = document.getElementById('summaryTotal');
     const summaryCount = document.getElementById('summaryCount');
-    if(summaryServices) summaryServices.innerText = serviceNames.length>0 ? serviceNames.join(', ') : 'Nenhum serviço selecionado';
+    if(summaryServices) {
+      if(serviceNames.length>0){
+        summaryServices.innerHTML = serviceNames.map(n=> `<li>${n}</li>`).join('');
+      } else {
+        summaryServices.innerHTML = '<li>Nenhum serviço selecionado</li>';
+      }
+    }
     if(summaryTotal) summaryTotal.innerText = formatCurrencyBR(total);
     if(summaryCount) summaryCount.innerText = serviceNames.length;
     // update pix amount text if present
@@ -449,10 +494,24 @@
     // If PIX, generate the QR and update the amount now (visible in the payment section)
     const total = updateScheduleSummary();
     const deposit = total * 0.3;
+    const pixAmountText = document.getElementById('pixAmountText');
+    if(pixAmountText) pixAmountText.innerText = `Valor a pagar (30%): ${formatCurrencyBR(deposit)}`;
+
+    const pixQrContainer = document.getElementById('pixQrModalContainer');
+    const modalCountdown = document.getElementById('modalPixCountdown');
+    const successContainer = document.getElementById('paymentSuccessContainer');
     if(chosen.value === 'pix'){
-      const pixAmountText = document.getElementById('pixAmountText');
-      if(pixAmountText) pixAmountText.innerText = `Valor a pagar (30%): ${formatCurrencyBR(deposit)}`;
       try{ generatePlaceholderQr(`PIX R$ ${deposit.toFixed(2)}`, 'pixQrModalContainer', '/images/pix-qr.png'); }catch(e){ console.error(e); }
+      if(pixQrContainer) pixQrContainer.style.display = 'block';
+      if(modalCountdown) {
+        modalCountdown.style.display = 'block';
+        modalCountdown.innerText = 'Aguardando confirmação... 10s';
+      }
+      if(successContainer) successContainer.style.display = 'none';
+    } else {
+      if(pixQrContainer) pixQrContainer.style.display = 'none';
+      if(modalCountdown) modalCountdown.style.display = 'none';
+      if(successContainer) successContainer.style.display = 'none';
     }
 
     // Now open the payment policy modal (user clicked to start payment)
@@ -464,14 +523,14 @@
     let t = 10;
     const iv = setInterval(()=>{
       t--;
-      document.getElementById('timer').innerText = t;
+      const timerEl = document.getElementById('timer');
+      if(timerEl) timerEl.innerText = t;
+      if(modalCountdown) modalCountdown.innerText = `Aguardando confirmação... ${t}s`;
       if(t<=0){
         clearInterval(iv);
-        const finalizeBtn = document.getElementById('finalizeBtn');
-        if(finalizeBtn){
-          finalizeBtn.style.display='inline-block';
-          finalizeBtn.disabled = false;
-        }
+        if(pixQrContainer) pixQrContainer.style.display = 'none';
+        if(modalCountdown) modalCountdown.style.display = 'none';
+        if(successContainer) successContainer.style.display = 'block';
         document.getElementById('paymentTimer').innerText='Pagamento confirmado.';
       }
     },1000);
@@ -481,13 +540,16 @@
     const selectedValue = document.getElementById('selectedDate').value;
     const dateInput = document.getElementById('datePicker');
     const stored = (function(){ try{ return localStorage.getItem('schedule_selected_date'); }catch(e){ return null; } })();
-    const initialDate = stored && stored !== '' ? stored : (selectedValue ? selectedValue : new Date().toISOString().slice(0,10));
+    const initialDate = stored && stored !== '' ? stored : (selectedValue ? selectedValue : new Date(Date.now() + 86400000).toISOString().slice(0,10));
     if(dateInput){
       // only set the input if browser didn't pre-fill or we have a stored value
       if(!dateInput.value || stored){
         dateInput.value = initialDate;
       }
-      syncDateInput(dateInput);
+      syncDateInput(dateInput, false);
+      @unless(isset($appointment))
+        setTimeout(()=>{ try{ if(dateInput && typeof dateInput.showPicker === 'function') dateInput.showPicker(); else dateInput.focus(); }catch(e){} }, 200);
+      @endunless
     }
     showStep(1);
     // sync initial selected services
@@ -521,15 +583,19 @@
         input.id = 'datePicker';
         input.className = 'date-picker';
         input.setAttribute('onchange','syncDateInput(this)');
+        input.min = '{{ date('Y-m-d', strtotime('+1 day')) }}';
+        input.style.width = '100%';
+        input.style.padding = '12px';
+        input.style.fontSize = '1rem';
         block.appendChild(input);
       }
       // set initial value from localStorage or server value
       try{
         const stored = localStorage.getItem('schedule_selected_date');
         const selectedValue = document.getElementById('selectedDate').value;
-        const initialDate = stored && stored !== '' ? stored : (selectedValue ? selectedValue : new Date().toISOString().slice(0,10));
+        const initialDate = stored && stored !== '' ? stored : (selectedValue ? selectedValue : new Date(Date.now() + 86400000).toISOString().slice(0,10));
         if(!input.value || stored) input.value = initialDate;
-        syncDateInput(input);
+        syncDateInput(input, false);
       }catch(e){}
 
       // observe and remove any future injected nodes that match legacy classes

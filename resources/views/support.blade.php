@@ -11,7 +11,7 @@
       <div class="header-top">
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
         <div class="header-title-block">
-          <h2>Suporte</h2>
+          <h1>Suporte</h1>
           <p>Tire suas dúvidas</p>
         </div>
       </div>
@@ -37,9 +37,6 @@
           <a href="https://wa.me/5531999999999" class="btn-primary" target="_blank">
             <i class="fab fa-whatsapp"></i> WhatsApp
           </a>
-          <button class="btn-secondary" onclick="openChat()">
-            <i class="fas fa-comments"></i> Chat Online
-          </button>
         </div>
       </div>
     </div>

@@ -22,7 +22,29 @@
       <div class="services-grid">
         @foreach($services as $s)
           <div class="service-card selectable" data-service-id="{{ $s->id }}" style="margin-bottom:8px;" onclick="(function(){ var ev = document.createEvent('HTMLEvents'); ev.initEvent('serviceCardClick', true, true); this.dispatchEvent(ev); })()">
-            <div class="service-icon-box {{ $s->bg ?? '' }}">{!! $s->icon ?? '🔧' !!}</div>
+            <div class="service-icon-box {{ $s->bg ?? '' }}">
+              @php
+                $serviceIcon = $s->icon ?? 'bi bi-question-circle';
+                $iconMap = [
+                  '✨' => 'bi bi-stars',
+                  '💧' => 'bi bi-droplet',
+                  '🌀' => 'bi bi-bucket',
+                  '🛡️' => 'bi bi-shield-lock',
+                  '💎' => 'bi bi-gem',
+                  '👁️' => 'bi bi-eye',
+                  '🔧' => 'bi bi-tools',
+                ];
+                $serviceIcon = $iconMap[$serviceIcon] ?? $serviceIcon;
+                if (!is_string($serviceIcon) || (!str_starts_with($serviceIcon, 'fa') && !str_starts_with($serviceIcon, 'bi'))) {
+                  $serviceIcon = 'bi bi-question-circle';
+                }
+              @endphp
+              @if(is_string($serviceIcon) && (str_starts_with($serviceIcon, 'fa') || str_starts_with($serviceIcon, 'bi')))
+                <i class="{{ $serviceIcon }}"></i>
+              @else
+                {{ $serviceIcon }}
+              @endif
+            </div>
             <div class="service-info">
               <div class="service-name">{{ $s->name }}</div>
             </div>
@@ -69,8 +91,23 @@
           card.className = 'service-card selectable';
           card.setAttribute('data-service-id', s.id);
           card.style.marginBottom = '8px';
+          const iconMap = {
+            '✨': 'bi bi-bucket',
+            '💧': 'bi bi-droplet',
+            '🌀': 'bi bi-brush',
+            '🛡️': 'bi bi-shield-lock',
+            '💎': 'bi bi-stars',
+            '👁️': 'bi bi-eye',
+            '🔧': 'bi bi-tools',
+          };
+          const rawIcon = s.icon || 'bi bi-question-circle';
+          let serviceIcon = iconMap[rawIcon] || rawIcon;
+          if (typeof serviceIcon !== 'string' || (!serviceIcon.startsWith('fa') && !serviceIcon.startsWith('bi'))) {
+            serviceIcon = 'bi bi-question-circle';
+          }
+          const serviceIconHtml = `<i class="${serviceIcon}"></i>`;
           card.innerHTML = `
-            <div class="service-icon-box ${s.bg ?? ''}">${s.icon ?? '🔧'}</div>
+            <div class="service-icon-box ${s.bg ?? ''}">${serviceIconHtml}</div>
             <div class="service-info">
               <div class="service-name">${s.name}</div>
             </div>

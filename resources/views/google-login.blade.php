@@ -18,9 +18,7 @@
             <p>Esta funcionalidade ainda não está configurada.</p>
           </div>
           <div class="auth-body">
-            <div class="alert-box alert-success">
-              O botão "Continuar com Google" agora está ativo e direciona para esta página.
-            </div>
+           
             <p style="color:#d7ecff; line-height:1.6; margin-bottom:1rem;">A integração com a conta Google ainda será implementada. Por enquanto, use o login com e-mail e senha abaixo ou registre uma nova conta.</p>
             <a href="{{ route('login') }}" class="btn-primary">Voltar para o login</a>
           </div>

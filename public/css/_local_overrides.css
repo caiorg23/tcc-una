@@ -1,0 +1,21 @@
+/* Local overrides for proceed bar button sizing/placement */
+.proceed-bar.fixed-bottom {
+  position: fixed;
+}
+.proceed-bar.fixed-bottom .btn-proceed#bottomContinueBtn {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 300px;
+  padding: 1.15rem 2.6rem;
+  font-size: 1.05rem;
+  z-index: 11;
+}
+
+@media (max-width: 640px) {
+  .proceed-bar.fixed-bottom .btn-proceed#bottomContinueBtn {
+    min-width: 220px;
+    padding: 0.9rem 1.8rem;
+    font-size: 0.98rem;
+  }
+}

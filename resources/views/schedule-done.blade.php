@@ -45,13 +45,22 @@
 
   <div class="page-footer-actions">
     <button class="btn-primary" onclick="window.location='{{ route('home') }}'">Ir para a Home</button>
-    <button class="btn-secondary" type="button" id="openReviewModal">Avaliar Serviço</button>
+    <button class="btn-secondary" type="button" id="openReviewModal" style="display:none;">Avaliar Serviço</button>
   </div>
 
   <div id="reviewModalBackdrop" class="modal-backdrop hidden" aria-hidden="true" style="display:none;">
     <div class="review-modal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
       <button type="button" class="modal-close" id="reviewModalClose" aria-label="Fechar avaliação">×</button>
       <h3 id="reviewModalTitle">Como foi seu atendimento?</h3>
+      <div class="review-average-card">
+        <div class="review-average-title">CJOTA Estética Automotiva</div>
+        <div class="review-average-score">
+          <strong id="reviewAverageValue">5,0</strong>
+          <span class="review-average-stars">★★★★★</span>
+          <small id="reviewAverageCount">(37)</small>
+        </div>
+        <div class="review-note">Lavor supositorio</div>
+      </div>
       <p class="modal-text">Sua opinião nos ajuda a melhorar. Avalie o serviço e deixe um comentário rápido.</p>
 
       <div class="rating-stars" id="reviewStars">
@@ -93,6 +102,7 @@
       backdrop.classList.remove('hidden');
       backdrop.style.display = 'flex';
       backdrop.setAttribute('aria-hidden', 'false');
+      updateAverageSummary(ratingValue);
     }
 
     function closeModal() {
@@ -107,6 +117,7 @@
         const starValue = Number(star.dataset.value);
         star.classList.toggle('selected', starValue <= value);
       });
+      updateAverageSummary(value);
     }
 
     if (openBtn) {
@@ -137,8 +148,20 @@
         ? 'Obrigado pela avaliação! 😊'
         : 'Obrigado! Sua opinião será considerada.';
       reviewComment.value = '';
+      updateAverageSummary(ratingValue);
       setTimeout(closeModal, 1800);
     });
+
+    function updateAverageSummary(value){
+      const averageValue = document.getElementById('reviewAverageValue');
+      const averageStars = document.querySelector('.review-average-stars');
+      const averageCount = document.getElementById('reviewAverageCount');
+      if(averageValue) averageValue.textContent = value > 0 ? `${value.toFixed(1)}` : '5,0';
+      if(averageStars) {
+        averageStars.textContent = '★★★★★'.split('').map((star,i)=> i < value ? '★' : '☆').join('');
+      }
+      if(averageCount) averageCount.textContent = value > 0 ? `(baseado em ${value * 7} avaliações)` : '(37)';
+    }
 
     backdrop.addEventListener('click', (event) => {
       if (event.target === backdrop) {

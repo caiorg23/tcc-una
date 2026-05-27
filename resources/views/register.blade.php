@@ -33,11 +33,17 @@
           </div>
           <div class="input-group">
             <div class="input-label">Senha</div>
-            <input type="password" name="password" placeholder="Mínimo 6 caracteres">
+            <div class="password-wrapper">
+              <input type="password" name="password" id="registerPassword" placeholder="Mínimo 6 caracteres">
+              <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">Ver</button>
+            </div>
           </div>
           <div class="input-group">
             <div class="input-label">Confirmar senha</div>
-            <input type="password" name="password_confirmation" placeholder="Repita a senha">
+            <div class="password-wrapper">
+              <input type="password" name="password_confirmation" id="registerPasswordConfirmation" placeholder="Repita a senha">
+              <button type="button" class="password-toggle" onclick="togglePassword('registerPasswordConfirmation')">Ver</button>
+            </div>
           </div>
           <button type="submit" class="btn-primary">Criar conta</button>
         </form>
@@ -48,4 +54,11 @@
     </div>
   </div>
 </div>
+<script>
+  function togglePassword(fieldId) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+</script>
 @endsection

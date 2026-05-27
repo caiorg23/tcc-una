@@ -37,13 +37,47 @@ class SiteController extends Controller
 
     public function sendPasswordResetLink(Request $request)
     {
+        // If user submitted new password fields, perform the reset directly
+        if ($request->filled('password') || $request->filled('password_confirmation')) {
+            $data = $request->validate([
+                'email' => 'required|email|exists:users,email',
+                'password' => 'required|string|min:6|confirmed',
+            ],[
+                'email.required' => 'O e-mail é obrigatório.',
+                'email.email' => 'Informe um e-mail válido.',
+                'email.exists' => 'E-mail não encontrado.',
+                'password.required' => 'A senha é obrigatória.',
+                'password.min' => 'A senha deve ter pelo menos 6 caracteres.',
+                'password.confirmed' => 'A confirmação de senha não confere.',
+            ]);
+
+            $user = User::where('email', $data['email'])->first();
+            if (! $user) {
+                return back()->withErrors(['email' => 'E-mail não encontrado.']);
+            }
+
+            $user->password = Hash::make($data['password']);
+            $user->save();
+
+            return redirect()->route('login')->with('status', 'Senha redefinida com sucesso. Faça login com sua nova senha.');
+        }
+
+        // Otherwise, handle the initial email submission: show reset fields if email exists
         $request->validate([
             'email' => 'required|email',
+        ],[
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.email' => 'Informe um e-mail válido.',
         ]);
 
-        $status = Password::sendResetLink($request->only('email'));
+        $email = $request->input('email');
+        $user = User::where('email', $email)->first();
+        if (! $user) {
+            return back()->withErrors(['email' => 'E-mail não cadastrado.']);
+        }
 
-        return back()->with('status', __($status));
+        // Show the same form with password fields for that email
+        return view('password-reset', ['show_reset' => true, 'email' => $email]);
     }
 
     public function authenticate(Request $request)
@@ -77,6 +111,17 @@ class SiteController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
+        ],[
+            'name.required' => 'O nome completo é obrigatório.',
+            'name.string' => 'O nome deve ser um texto válido.',
+            'name.max' => 'O nome deve ter no máximo 255 caracteres.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.email' => 'Informe um e-mail válido.',
+            'email.unique' => 'Esse e-mail já está sendo usado.',
+            'password.required' => 'A senha é obrigatória.',
+            'password.string' => 'A senha deve ser um texto válido.',
+            'password.min' => 'A senha deve ter pelo menos 6 caracteres.',
+            'password.confirmed' => 'A confirmação de senha não confere.',
         ]);
 
         $user = User::create([
@@ -127,7 +172,8 @@ class SiteController extends Controller
 
     public function services()
     {
-        $services = Service::orderBy('name')->get();
+        // Preserve insertion order (id) so custom seeder order appears on site
+        $services = Service::orderBy('id')->get();
         return view('services', compact('services'));
     }
 
@@ -161,14 +207,14 @@ class SiteController extends Controller
 
     public function schedule()
     {
-        $services = Service::orderBy('name')->get();
+        $services = Service::orderBy('id')->get();
         return view('schedule', compact('services'));
     }
 
     public function editSchedule(Appointment $appointment)
     {
         abort_if($appointment->user_id !== Auth::id(), 403);
-        $services = Service::orderBy('name')->get();
+        $services = Service::orderBy('id')->get();
         return view('schedule', compact('services', 'appointment'));
     }
 
@@ -189,7 +235,7 @@ class SiteController extends Controller
         $data = $request->validate([
             'service_ids' => 'required|array|min:1',
             'service_ids.*' => 'exists:services,id',
-            'date' => 'required|date|after:today|before_or_equal:' . now()->addDays(14)->toDateString(),
+            'date' => 'required|date|after:today',
             'time' => 'required|string',
             'appointment_id' => 'nullable|exists:appointments,id',
         ]);
@@ -278,6 +324,43 @@ class SiteController extends Controller
         abort_if($appointment->user_id !== Auth::id(), 403);
         $appointment->update(['status' => 'cancelado']);
         return redirect()->route('home')->with('status', 'Agendamento cancelado com sucesso.');
+    }
+
+    public function updateAppointment(Request $request, Appointment $appointment)
+    {
+        abort_if($appointment->user_id !== Auth::id(), 403);
+
+        $serviceIds = array_values(array_filter((array) $request->input('service_ids', []), function ($id) {
+            return is_numeric($id) && $id > 0;
+        }));
+
+        if (empty($serviceIds)) {
+            return back()->withErrors(['service_ids' => 'Selecione pelo menos um serviço.'])->withInput();
+        }
+
+        $data = $request->validate([
+            'service_ids' => 'required|array|min:1',
+            'service_ids.*' => 'exists:services,id',
+            'date' => 'required|date|after:today',
+            'time' => 'required|string',
+        ]);
+
+        $appointment->update([
+            'service_ids' => $serviceIds,
+            'service_id' => $serviceIds[0] ?? $appointment->service_id,
+            'date' => $data['date'],
+            'time' => $data['time'],
+            'status' => 'confirmado',
+        ]);
+
+        return redirect()->route('orders')->with('status', 'Agendamento atualizado com sucesso.');
+    }
+
+    public function destroyAppointment(Appointment $appointment)
+    {
+        abort_if($appointment->user_id !== Auth::id(), 403);
+        $appointment->delete();
+        return redirect()->route('orders')->with('status', 'Agendamento removido com sucesso.');
     }
 
     public function about()

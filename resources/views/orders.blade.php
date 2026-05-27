@@ -12,7 +12,7 @@
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
         <div class="header-title-block">
           <h2>Meus Pedidos</h2>
-          <p>Veja todos os seus agendamentos e cancele ou edite quando precisar.</p>
+          <p>O historico de seus pedidos seá excluidos após 60 dias</p>
         </div>
       </div>
     </div>
@@ -33,11 +33,28 @@
           </div>
         </div>
       @else
+        @php
+          // Ordena: confirmados primeiro, depois cancelados, depois os demais
+          $appointments = $appointments->sortBy(function($a){
+              if ($a->status === 'confirmado') return 0;
+              if ($a->status === 'cancelado') return 2;
+              return 1;
+          })->values();
+        @endphp
         <div class="appointment-list">
           @foreach($appointments as $appointment)
-            <div class="appointment-card">
+            @php
+              // Obter todos os nomes dos serviços selecionados (service_ids cast é array)
+              $serviceNames = [];
+              if (!empty($appointment->service_ids) && is_array($appointment->service_ids)) {
+                  $serviceNames = \App\Models\Service::whereIn('id', $appointment->service_ids)->pluck('name')->toArray();
+              } elseif ($appointment->service) {
+                  $serviceNames = [$appointment->service->name];
+              }
+            @endphp
+            <div class="appointment-card" style="margin-bottom:1rem;">
               <div class="appointment-info">
-                <div class="appointment-title">{{ optional($appointment->service)->name ?? 'Serviço indisponível' }}</div>
+                <div class="appointment-title">{{ implode(', ', $serviceNames) ?: 'Serviço indisponível' }}</div>
                 <div class="appointment-meta">
                   Data: {{ \Illuminate\Support\Carbon::parse($appointment->date)->format('d/m/Y') }}<br>
                   Horário: {{ $appointment->time }}<br>
@@ -45,13 +62,33 @@
                 </div>
               </div>
               <div class="appointment-actions">
-                @if($appointment->status !== 'cancelado' && \Illuminate\Support\Carbon::parse($appointment->date)->isFuture())
-                  <form action="{{ route('appointments.cancel', $appointment) }}" method="POST">
+                @php
+                  $apptDate = \Illuminate\Support\Carbon::parse($appointment->date);
+                  $isFuture = $apptDate->isFuture();
+                  $isPast = $apptDate->isPast();
+                @endphp
+
+                {{-- Cancelar: apenas agendamentos futuros e que não foram cancelados --}}
+                @if($appointment->status !== 'cancelado' && $isFuture)
+                  <form action="{{ route('appointments.cancel', $appointment) }}" method="POST" style="display:inline-block; margin-right:0.5rem;">
                     @csrf
                     <button type="submit" class="btn-small btn-small-danger">Cancelar</button>
                   </form>
                 @endif
-                <button type="button" class="btn-small" onclick="window.location='{{ route('schedule.edit', $appointment) }}'">Editar</button>
+
+                {{-- Excluir: permitir excluir agendamentos passados ou cancelados --}}
+                @if($isPast || $appointment->status === 'cancelado')
+                  <form action="{{ route('appointments.destroy', $appointment) }}" method="POST" style="display:inline-block; margin-right:0.5rem;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-small btn-small-danger">Excluir</button>
+                  </form>
+                @endif
+
+                {{-- Editar: apenas agendamentos futuros que não estão cancelados --}}
+                @if($isFuture && $appointment->status !== 'cancelado')
+                  <button type="button" class="btn-small" onclick="window.location='{{ route('schedule.edit', $appointment) }}'">Editar</button>
+                @endif
               </div>
             </div>
           @endforeach

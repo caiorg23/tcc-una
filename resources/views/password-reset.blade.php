@@ -15,7 +15,7 @@
         <div class="auth-card">
           <div class="auth-header">
             <h1>Recuperar senha</h1>
-            <p>Informe seu e-mail para receber o link de redefinição.</p>
+            <p>Informe seu e-mail para redefinir a senha (se estiver cadastrado).</p>
           </div>
           <div class="auth-body">
             @if(session('status'))
@@ -34,11 +34,36 @@
             @endif
             <form action="{{ route('password.email') }}" method="POST">
               @csrf
-              <div class="input-group">
-                <div class="input-label">E-mail cadastrado</div>
-                <input type="email" name="email" placeholder="seu@email.com" value="{{ old('email') }}">
-              </div>
-              <button type="submit" class="btn-primary">Enviar link de recuperação</button>
+              @if(!empty($show_reset) && !empty($email))
+                <div class="input-group">
+                  <div class="input-label">E-mail</div>
+                  <input type="email" name="email" value="{{ $email }}" readonly>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Redefinir senha</div>
+                  <div class="password-wrapper">
+                    <input type="password" name="password" id="resetPassword" placeholder="Nova senha">
+                    <button type="button" class="password-toggle" onclick="togglePassword('resetPassword')">Ver</button>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Confirmar senha</div>
+                  <div class="password-wrapper">
+                    <input type="password" name="password_confirmation" id="resetPasswordConfirm" placeholder="Confirme a nova senha">
+                    <button type="button" class="password-toggle" onclick="togglePassword('resetPasswordConfirm')">Ver</button>
+                  </div>
+                </div>
+                <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+                  <button type="submit" class="btn-primary">Redefinir senha</button>
+                  <a href="{{ route('login') }}" class="btn-secondary" style="display:inline-flex; align-items:center; justify-content:center;">Cancelar</a>
+                </div>
+              @else
+                <div class="input-group">
+                  <div class="input-label">E-mail cadastrado</div>
+                  <input type="email" name="email" placeholder="seu@email.com" value="{{ old('email') }}">
+                </div>
+                <button type="submit" class="btn-primary">Verificar e redefinir</button>
+              @endif
             </form>
             <div class="auth-link" style="margin-top: 1rem;">
               <a href="{{ route('login') }}">Voltar para o login</a>
@@ -49,4 +74,11 @@
     </div>
   </div>
 </div>
-@endsection
+          <script>
+            function togglePassword(fieldId) {
+              const input = document.getElementById(fieldId);
+              if (!input) return;
+              input.type = input.type === 'password' ? 'text' : 'password';
+            }
+          </script>
+          @endsection

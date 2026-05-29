@@ -19,7 +19,7 @@
       </div>
 
       @if(session('status'))
-        <div class="alert-box" style="margin-bottom:18px;">
+        <div class="alert-box alert-success" style="margin-bottom:18px;">
           {{ session('status') }}
         </div>
       @endif

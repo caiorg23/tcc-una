@@ -11,8 +11,8 @@
       <div class="header-top">
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
         <div class="header-title-block">
-          <h2>Agendamento Concluído</h2>
-          <p>Seu horário foi reservado com sucesso</p>
+          <h3>Agendamento Concluído</h3>
+          
         </div>
       </div>
     </div>
@@ -23,28 +23,11 @@
         <h3>Agendamento confirmado!</h3>
         <p>Recebemos a solicitação e em breve você receberá a confirmação via WhatsApp.</p>
       </div>
-
-      <div class="confirm-card">
-        <div class="confirm-line">
-          <span>Serviço</span>
-          <strong>{{ $appointment->service->name }}</strong>
-        </div>
-        <div class="confirm-line">
-          <span>Data</span>
-          <strong>{{ date('d/m/Y', strtotime($appointment->date)) }}</strong>
-        </div>
-        <div class="confirm-line">
-          <span>Horário</span>
-          <strong>{{ $appointment->time }}</strong>
-        </div>
-      </div>
-
-      
     </div>
   </div>
 
   <div class="page-footer-actions">
-    <button class="btn-primary" onclick="window.location='{{ route('home') }}'">Ir para a Home</button>
+    <button class="btn-secondary" onclick="window.location='{{ route('home') }}'">Ir para a Home</button>
     <button class="btn-secondary" type="button" id="openReviewModal" style="display:none;">Avaliar Serviço</button>
   </div>
 

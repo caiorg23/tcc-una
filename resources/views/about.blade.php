@@ -8,7 +8,7 @@
         <h1>Sobre a CJOTA</h1>
         <p>A CJOTA é especialista em estética automotiva e oferece cuidado completo para seu veículo, com foco em qualidade e atendimento personalizado.</p>
 
-        <div class="card-grid" style="margin-top:1.5rem;">
+        <div class="card-grid">
             <div class="card">
                 <h2>Quem somos</h2>
                 <p>Uma equipe experiente em limpeza e proteção automotiva, pronta para deixar seu carro impecável.</p>

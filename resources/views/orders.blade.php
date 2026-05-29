@@ -11,7 +11,7 @@
       <div class="header-top">
         <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
         <div class="header-title-block">
-          <h2>Meus Pedidos</h2>
+          <h4>Meus Pedidos</h4>
           <p>O historico de seus pedidos seá excluidos após 60 dias</p>
         </div>
       </div>
@@ -19,11 +19,12 @@
 
     <div class="container">
       @if(session('status'))
-        <div class="alert-box">{{ session('status') }}</div>
+        <div class="alert-box alert-success">{{ session('status') }}</div>
       @endif
 
       <div class="section-title">Pedidos</div>
       <p class="confirm-note">Acompanhe os agendamentos já confirmados, os cancelados e os próximos horários.</p>
+      <br>
 
       @if($appointments->isEmpty())
         <div class="appointment-card">
@@ -33,14 +34,6 @@
           </div>
         </div>
       @else
-        @php
-          // Ordena: confirmados primeiro, depois cancelados, depois os demais
-          $appointments = $appointments->sortBy(function($a){
-              if ($a->status === 'confirmado') return 0;
-              if ($a->status === 'cancelado') return 2;
-              return 1;
-          })->values();
-        @endphp
         <div class="appointment-list">
           @foreach($appointments as $appointment)
             @php

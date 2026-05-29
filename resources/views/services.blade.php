@@ -21,7 +21,7 @@
       {{-- Server-side fallback rendering so changes show even if JS is cached/blocked --}}
       <div class="services-grid">
         @foreach($services as $s)
-          <div class="service-card selectable" data-service-id="{{ $s->id }}" style="margin-bottom:8px;" onclick="(function(){ var ev = document.createEvent('HTMLEvents'); ev.initEvent('serviceCardClick', true, true); this.dispatchEvent(ev); })()">
+          <div class="service-card selectable" data-service-id="{{ $s->id }}" onclick="(function(){ var ev = document.createEvent('HTMLEvents'); ev.initEvent('serviceCardClick', true, true); this.dispatchEvent(ev); })()">
             <div class="service-icon-box {{ $s->bg ?? '' }}">
               @php
                 $serviceIcon = $s->icon ?? 'bi bi-question-circle';
@@ -90,7 +90,6 @@
           const card = document.createElement('div');
           card.className = 'service-card selectable';
           card.setAttribute('data-service-id', s.id);
-          card.style.marginBottom = '8px';
           const iconMap = {
             '✨': 'bi bi-bucket',
             '💧': 'bi bi-droplet',

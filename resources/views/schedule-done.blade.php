@@ -22,6 +22,9 @@
         <div class="success-icon">✓</div>
         <h3>Agendamento confirmado!</h3>
         <p>Recebemos a solicitação e em breve você receberá a confirmação via WhatsApp.</p>
+        <div class="confirmation-logo">
+          <img src="{{ asset('images/logo-confirmacao.PNG') }}" alt="Confirmação" />
+        </div>
       </div>
     </div>
   </div>

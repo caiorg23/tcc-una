@@ -1038,6 +1038,25 @@ button {
   border-bottom: none;
 }
 
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 980px) {
+  .services-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .service-summary-list li {
   padding: 0.65rem 0.5rem;
   border-radius: 0.7rem;
@@ -1386,9 +1405,21 @@ button {
   background: rgba(9, 155, 203, 0.12);
   border: 1px solid rgba(9, 155, 203, 0.25);
   border-radius: 1rem;
-  padding: 5.6rem;
+  padding: 5.6rem 2rem 3rem;
   text-align: center;
   margin-bottom: 1.5rem;
+}
+
+.confirmation-logo {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem auto;
+}
+
+.confirmation-logo img {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
 }
 
 .success-icon {

@@ -14,7 +14,7 @@
             <div class="back-btn" onclick="window.location='{{ route('home') }}'">‹</div>
             <div class="header-title-block">
               <h2>{{ isset($appointment) ? 'Editar Agendamento' : 'Agendamento' }}</h2>
-              <p>{{ isset($appointment) ? 'Atualize data, hora ou serviço' : 'Escolha data, hora e serviços' }}</p>
+             
             </div>
           </div>
           @if(isset($appointment))
@@ -27,19 +27,26 @@
             <div class="progress-track-fill" id="progressLineFill"></div>
           </div>
           <div class="progress-step active" data-step="1">
-            <span class="step-circle">1</span>
             <span class="step-label">Seleção</span>
+            <span class="step-circle">1</span>
           </div>
           <div class="step-divider"></div>
           <div class="progress-step" data-step="2">
-            <span class="step-circle">2</span>
             <span class="step-label">Serviços</span>
+            <span class="step-circle">2</span>
           </div>
           <div class="step-divider"></div>
           <div class="progress-step" data-step="3">
+            <span class="step-label">{{ isset($appointment) ? 'Confirmação' : 'Pagamento' }}</span>
             <span class="step-circle">3</span>
-            <span class="step-label">Pagamento</span>
           </div>
+          @unless(isset($appointment))
+            <div class="step-divider"></div>
+            <div class="progress-step" data-step="4">
+              <span class="step-label">Confirmação</span>
+              <span class="step-circle">4</span>
+            </div>
+          @endunless
         </div>
 
         <div class="schedule-panel">
@@ -68,11 +75,8 @@
             }
             $summaryServices = $services->whereIn('id', $selectedServiceIds)->pluck('name')->toArray();
           @endphp
-          <form action="{{ isset($appointment) ? route('appointments.update', $appointment) : route('schedule.confirm') }}" method="POST" id="scheduleForm">
+          <form action="{{ route('schedule.confirm') }}" method="POST" id="scheduleForm">
             @csrf
-            @if(isset($appointment))
-              @method('PUT')
-            @endif
             <input type="hidden" name="appointment_id" id="appointmentId" value="{{ $appointment?->id ?? '' }}">
             <input type="hidden" name="service_id" id="selectedServiceId" value="{{ $selectedServiceIds[0] ?? '' }}">
             <div id="serviceIdsContainer">
@@ -90,7 +94,7 @@
                 <div class="section-title">Escolha a data</div>
                 <div class="date-grid" id="dateGrid">
                   <div class="date-picker-block">
-                    <input type="date" id="datePicker" class="date-picker" onchange="syncDateInput(this)" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ old('date', $appointment?->date ?? date('Y-m-d', strtotime('+1 day'))) }}" style="width:100%; padding:16px 18px; font-size:1.05rem;" />
+                    <input type="date" id="datePicker" class="date-picker date-picker-expanded" onchange="syncDateInput(this)" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ old('date', $appointment?->date ?? date('Y-m-d', strtotime('+1 day'))) }}" />
                   </div>
                 </div>
               </div>
@@ -154,6 +158,29 @@
                 </div>
               </div>
             </div>
+
+            @if(isset($appointment))
+            <div class="schedule-step" data-step="3" style="display:none;">
+              <div class="schedule-section">
+                <div class="section-title">Confirmação</div>
+                <p>Revise as alterações e confirme para atualizar o agendamento.</p>
+                <div class="confirm-summary">
+                  <div class="confirm-line"><strong>Data:</strong> <span id="summaryDate">{{ old('date', $appointment->date ? \Illuminate\Support\Carbon::parse($appointment->date)->format('d/m/Y') : '') }}</span></div>
+                  <div class="confirm-line"><strong>Horário:</strong> <span id="summaryTime">{{ old('time', $appointment->time) }}</span></div>
+                  <div class="confirm-line"><strong>Serviços selecionados:</strong></div>
+                  <ul id="summaryServices" class="summary-services-list">
+                    @if(!empty($summaryServices))
+                      @foreach($summaryServices as $serviceName)
+                        <li>{{ $serviceName }}</li>
+                      @endforeach
+                    @else
+                      <li>Nenhum serviço selecionado</li>
+                    @endif
+                  </ul>
+                </div>
+              </div>
+            </div>
+            @endif
 
             @unless(isset($appointment))
             <div class="schedule-step" data-step="3" style="display:none;">
@@ -240,23 +267,34 @@
 
 @push('scripts')
 <script>
+  const isEditMode = {{ isset($appointment) ? 'true' : 'false' }};
+  const totalSteps = isEditMode ? 3 : 4;
   let currentStep = 1;
   function showStep(n){
     currentStep = n;
     document.querySelectorAll('.schedule-step').forEach(el=> el.style.display='none');
     const el = document.querySelector(`.schedule-step[data-step="${n}"]`);
     if(el) el.style.display='block';
-    document.querySelectorAll('.progress-step').forEach(p=> p.classList.remove('active'));
-    const prog = document.querySelector(`.progress-step[data-step="${n}"]`);
-    if(prog) prog.classList.add('active');
+    document.querySelectorAll('.progress-step').forEach(p=> {
+      const step = Number(p.dataset.step || 0);
+      p.classList.toggle('active', step > 0 && step <= n);
+    });
     const bottomContinue = document.getElementById('bottomContinueBtn');
     const bottomConfirm = document.getElementById('bottomConfirmBtn');
     const bottomBack = document.getElementById('bottomBackBtn');
+    const proceedBar = document.querySelector('.proceed-bar');
     if(bottomBack){
       bottomBack.style.display = n > 1 ? 'inline-block' : 'none';
     }
+    if(proceedBar){
+      if(n === 1){
+        proceedBar.style.justifyContent = 'flex-end';
+      } else {
+        proceedBar.style.justifyContent = 'space-between';
+      }
+    }
     if(bottomContinue && bottomConfirm){
-      if(n < 3){
+      if(n < totalSteps){
         bottomContinue.style.display = 'inline-block';
         bottomConfirm.style.display = 'none';
       } else {
@@ -264,18 +302,22 @@
         bottomConfirm.style.display = 'inline-block';
       }
     }
-    if(n === 3){
+    if(n >= 2){
       updateScheduleSummary();
+    }
+    if(n === 3 && !isEditMode){
       const firstPaymentOption = document.querySelector('input[name="payment_method"]:checked');
       if(!firstPaymentOption){
         document.querySelectorAll('input[name="payment_method"]').forEach(r=> r.checked = false);
-        document.getElementById('pixBlock').style.display = 'none';
-        document.getElementById('cardBlock').style.display = 'none';
+        const pix = document.getElementById('pixBlock');
+        const card = document.getElementById('cardBlock');
+        if(pix) pix.style.display = 'none';
+        if(card) card.style.display = 'none';
       }
     }
     const fill = document.getElementById('progressLineFill');
     if(fill){
-      const percent = ((n - 1) / 2) * 100;
+      const percent = ((n - 1) / (totalSteps - 1)) * 100;
       fill.style.width = `${percent}%`;
     }
   }
@@ -290,7 +332,16 @@
       const selected = document.querySelectorAll('.service-card.selected');
       if(selected.length===0){ alert('Selecione pelo menos um serviço.'); return; }
     }
-    showStep(Math.min(3, currentStep+1));
+    if(currentStep===3 && !isEditMode){
+      const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+      if(!selectedPayment){
+        alert('Selecione um método de pagamento antes de continuar.');
+        return;
+      }
+      document.getElementById('scheduleForm').submit();
+      return;
+    }
+    showStep(Math.min(totalSteps, currentStep+1));
   }
 
   function prevStep(){ showStep(Math.max(1, currentStep-1)); }

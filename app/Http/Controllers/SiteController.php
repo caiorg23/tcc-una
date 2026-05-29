@@ -163,8 +163,7 @@ class SiteController extends Controller
         $appointments = Auth::user()
             ->appointments()
             ->with('service')
-            ->orderBy('date')
-            ->orderBy('time')
+            ->orderByDesc('created_at')
             ->get();
 
         return view('orders', compact('appointments'));
@@ -299,20 +298,23 @@ class SiteController extends Controller
                 'reminder' => $schedule['reminder'],
                 'status' => 'confirmado',
             ]);
-        } else {
-            $appointment = Appointment::create([
-                'user_id' => Auth::id(),
-                'client_name' => $schedule['client_name'],
-                'client_email' => $schedule['client_email'],
-                'service_id' => $schedule['service_id'],
-                'service_ids' => $schedule['service_ids'],
-                'date' => $schedule['date'],
-                'time' => $schedule['time'],
-                'location' => $schedule['location'],
-                'reminder' => $schedule['reminder'],
-                'status' => 'confirmado',
-            ]);
+
+            session()->forget('schedule');
+            return redirect()->route('orders')->with('status', 'Agendamento atualizado com sucesso.');
         }
+
+        $appointment = Appointment::create([
+            'user_id' => Auth::id(),
+            'client_name' => $schedule['client_name'],
+            'client_email' => $schedule['client_email'],
+            'service_id' => $schedule['service_id'],
+            'service_ids' => $schedule['service_ids'],
+            'date' => $schedule['date'],
+            'time' => $schedule['time'],
+            'location' => $schedule['location'],
+            'reminder' => $schedule['reminder'],
+            'status' => 'confirmado',
+        ]);
 
         session()->forget('schedule');
 
